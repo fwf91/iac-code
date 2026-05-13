@@ -1,0 +1,26 @@
+{
+  "version.label": {
+    "message": "Actuel",
+    "description": "The label for version current"
+  },
+  "sidebar.docsSidebar.category.Getting Started": {
+    "message": "Démarrage rapide",
+    "description": "The label for category 'Getting Started' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Using IaC Code": {
+    "message": "Utiliser IaC Code",
+    "description": "The label for category 'Using iac-code' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Configuration": {
+    "message": "Configuration",
+    "description": "The label for category 'Configuration' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.ACP Protocol": {
+    "message": "Protocole ACP",
+    "description": "The label for category 'ACP Protocol' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Automation": {
+    "message": "Automatisation",
+    "description": "The label for category 'Automation' in sidebar 'docsSidebar'"
+  }
+}

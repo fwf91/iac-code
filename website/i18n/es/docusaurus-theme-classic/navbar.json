@@ -1,0 +1,18 @@
+{
+  "title": {
+    "message": "IaC Code",
+    "description": "The title in the navbar"
+  },
+  "logo.alt": {
+    "message": "Logo de IaC Code",
+    "description": "The alt text of navbar logo"
+  },
+  "item.label.Docs": {
+    "message": "Documentacion",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.CLI": {
+    "message": "CLI",
+    "description": "Navbar item with label CLI"
+  }
+}

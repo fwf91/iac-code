@@ -1,0 +1,26 @@
+{
+  "version.label": {
+    "message": "Aktuell",
+    "description": "The label for version current"
+  },
+  "sidebar.docsSidebar.category.Getting Started": {
+    "message": "Erste Schritte",
+    "description": "The label for category 'Getting Started' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Using IaC Code": {
+    "message": "IaC Code verwenden",
+    "description": "The label for category 'Using iac-code' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Configuration": {
+    "message": "Konfiguration",
+    "description": "The label for category 'Configuration' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.ACP Protocol": {
+    "message": "ACP-Protokoll",
+    "description": "The label for category 'ACP Protocol' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Automation": {
+    "message": "Automatisierung",
+    "description": "The label for category 'Automation' in sidebar 'docsSidebar'"
+  }
+}

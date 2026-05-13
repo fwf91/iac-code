@@ -1,0 +1,22 @@
+{
+  "link.title.Docs": {
+    "message": "Documentation",
+    "description": "The title of the footer links column with title=Docs in the footer"
+  },
+  "link.item.label.Getting Started": {
+    "message": "Démarrage rapide",
+    "description": "The label of footer link with label=Getting Started linking to /docs/getting-started/installation"
+  },
+  "link.item.label.CLI Overview": {
+    "message": "Aperçu CLI",
+    "description": "The label of footer link with label=CLI Overview linking to /docs/cli/usage"
+  },
+  "link.item.label.Slash Commands": {
+    "message": "Commandes slash",
+    "description": "The label of footer link with label=Slash Commands linking to /docs/cli/commands"
+  },
+  "copyright": {
+    "message": "Copyright © 2026 IaC Code contributors.",
+    "description": "The footer copyright"
+  }
+}
