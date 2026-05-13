@@ -4,7 +4,7 @@
 
 自然言語インタラクションを通じて、Alibaba Cloud のリソースオーケストレーションテンプレート（ROS / Terraform）を生成・管理する AI 駆動の Infrastructure as Code（IaC）アシスタントです。
 
-> **ドキュメント**：[https://aliyun.github.io/iac-code/](https://aliyun.github.io/iac-code/)
+> **ドキュメント**：[https://aliyun.github.io/iac-code/](https://aliyun.github.io/iac-code/ja/)
 
 ## インストール
 

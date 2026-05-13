@@ -4,7 +4,7 @@
 
 KI-gestützter Infrastructure-as-Code-Assistent (IaC), der Alibaba Cloud Ressourcen-Orchestrierungsvorlagen (ROS / Terraform) durch natürlichsprachliche Interaktion generiert und verwaltet.
 
-> **Dokumentation**: [https://aliyun.github.io/iac-code/](https://aliyun.github.io/iac-code/)
+> **Dokumentation**: [https://aliyun.github.io/iac-code/](https://aliyun.github.io/iac-code/de/)
 
 ## Installation
 

@@ -4,7 +4,7 @@
 
 Assistente de Infraestrutura como Código (IaC) impulsionado por IA que gera e gerencia modelos de orquestração de recursos do Alibaba Cloud (ROS / Terraform) por meio de interação em linguagem natural.
 
-> **Documentação**: [https://aliyun.github.io/iac-code/](https://aliyun.github.io/iac-code/)
+> **Documentação**: [https://aliyun.github.io/iac-code/](https://aliyun.github.io/iac-code/pt/)
 
 ## Instalação
 
