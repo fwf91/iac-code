@@ -86,7 +86,12 @@ class TestJsonWriter:
         assert tool["input"] == {"cmd": "ls"}
         assert tool["result"] == "file.txt"
         assert tool["is_error"] is False
-        assert result["usage"] == {"input_tokens": 10, "output_tokens": 20}
+        assert result["usage"] == {
+            "input_tokens": 10,
+            "output_tokens": 20,
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0,
+        }
 
     def test_empty_output(self) -> None:
         stream = io.StringIO()

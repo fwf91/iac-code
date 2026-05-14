@@ -158,6 +158,24 @@ class OpenAIProvider(Provider):
             for t in tools
         ]
 
+    # -- API message assembly ---------------------------------------------------
+
+    def _build_api_messages(
+        self,
+        messages: list[Message],
+        system: str,
+    ) -> list[dict[str, Any]]:
+        """Build the ``messages`` list sent to the OpenAI Chat API.
+
+        Subclasses may override this to alter the system-message format
+        (e.g. to inject ``cache_control`` markers for DashScope).
+        """
+        api_messages: list[dict[str, Any]] = []
+        if system:
+            api_messages.append({"role": "system", "content": system})
+        api_messages.extend(self._convert_messages(messages))
+        return api_messages
+
     # -- Streaming -------------------------------------------------------------
 
     async def stream(
@@ -167,10 +185,7 @@ class OpenAIProvider(Provider):
         tools: list[ToolDefinition] | None = None,
         max_tokens: int = 8192,
     ) -> AsyncGenerator[StreamEvent, None]:
-        api_messages: list[dict[str, Any]] = []
-        if system:
-            api_messages.append({"role": "system", "content": system})
-        api_messages.extend(self._convert_messages(messages))
+        api_messages = self._build_api_messages(messages, system)
 
         kwargs: dict[str, Any] = {
             "model": self._model,
@@ -201,9 +216,17 @@ class OpenAIProvider(Provider):
             has_content = True
             # Usage info (final chunk)
             if chunk.usage is not None:
+                cache_read = 0
+                cache_create = 0
+                details = getattr(chunk.usage, "prompt_tokens_details", None)
+                if details:
+                    cache_read = getattr(details, "cached_tokens", 0) or 0
+                    cache_create = getattr(details, "cache_creation_input_tokens", 0) or 0
                 usage = Usage(
                     input_tokens=chunk.usage.prompt_tokens or 0,
                     output_tokens=chunk.usage.completion_tokens or 0,
+                    cache_read_input_tokens=cache_read,
+                    cache_creation_input_tokens=cache_create,
                 )
 
             if not chunk.choices:
@@ -282,10 +305,7 @@ class OpenAIProvider(Provider):
         tools: list[ToolDefinition] | None = None,
         max_tokens: int = 8192,
     ) -> NonStreamingResponse:
-        api_messages: list[dict[str, Any]] = []
-        if system:
-            api_messages.append({"role": "system", "content": system})
-        api_messages.extend(self._convert_messages(messages))
+        api_messages = self._build_api_messages(messages, system)
 
         kwargs: dict[str, Any] = {
             "model": self._model,
@@ -329,9 +349,18 @@ class OpenAIProvider(Provider):
         elif choice.finish_reason == "length":
             stop_reason = "max_tokens"
 
+        cache_read = 0
+        cache_create = 0
+        if response.usage:
+            details = getattr(response.usage, "prompt_tokens_details", None)
+            if details:
+                cache_read = getattr(details, "cached_tokens", 0) or 0
+                cache_create = getattr(details, "cache_creation_input_tokens", 0) or 0
         usage = Usage(
             input_tokens=response.usage.prompt_tokens if response.usage else 0,
             output_tokens=response.usage.completion_tokens if response.usage else 0,
+            cache_read_input_tokens=cache_read,
+            cache_creation_input_tokens=cache_create,
         )
 
         return NonStreamingResponse(

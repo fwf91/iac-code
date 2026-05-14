@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: iac-code 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-14 15:54+0800\n"
+"POT-Creation-Date: 2026-05-15 09:48+0800\n"
 "PO-Revision-Date: 2026-05-13 00:00+0000\n"
 "Last-Translator: \n"
 "Language: pt\n"
@@ -349,7 +349,7 @@ msgid "Credential"
 msgstr "Credencial"
 
 #: src/iac_code/commands/auth.py:778 src/iac_code/commands/auth.py:875
-#: src/iac_code/commands/auth.py:980 src/iac_code/ui/renderer.py:417
+#: src/iac_code/commands/auth.py:980 src/iac_code/ui/renderer.py:418
 msgid "Region"
 msgstr "Região"
 
@@ -572,7 +572,7 @@ msgstr ""
 "Nenhuma chave API configurada para o provedor '{provider}' (modelo: "
 "{model}). Execute /auth para configurar."
 
-#: src/iac_code/providers/openai_provider.py:263
+#: src/iac_code/providers/openai_provider.py:286
 #, python-brace-format
 msgid ""
 "API returned no data. Please check that your API Base URL is correct "
@@ -583,7 +583,7 @@ msgstr ""
 "(atual: {base_url}). Muitos endpoints compatíveis com OpenAI exigem o "
 "sufixo /v1 (por exemplo, {base_url}/v1)."
 
-#: src/iac_code/providers/openai_provider.py:307
+#: src/iac_code/providers/openai_provider.py:327
 #, python-brace-format
 msgid ""
 "API returned an invalid response. Please check that your API Base URL is "
@@ -1061,86 +1061,86 @@ msgstr "Modo debug"
 msgid "Log file"
 msgstr "Arquivo de log"
 
-#: src/iac_code/ui/renderer.py:350 src/iac_code/ui/renderer.py:620
-#: src/iac_code/ui/renderer.py:1335
+#: src/iac_code/ui/renderer.py:351 src/iac_code/ui/renderer.py:621
+#: src/iac_code/ui/renderer.py:1348
 #, python-brace-format
 msgid "Thought for {seconds:.1f}s"
 msgstr "Raciocínio por {seconds:.1f}s"
 
-#: src/iac_code/ui/renderer.py:366 src/iac_code/ui/renderer.py:652
-#: src/iac_code/ui/renderer.py:1356
+#: src/iac_code/ui/renderer.py:367 src/iac_code/ui/renderer.py:653
+#: src/iac_code/ui/renderer.py:1369
 msgid "(ctrl+o to expand)"
 msgstr "(ctrl+o para expandir)"
 
-#: src/iac_code/ui/renderer.py:393
+#: src/iac_code/ui/renderer.py:394
 msgid "Resource"
 msgstr "Recurso"
 
-#: src/iac_code/ui/renderer.py:394
+#: src/iac_code/ui/renderer.py:395
 msgid "Type"
 msgstr "Tipo"
 
-#: src/iac_code/ui/renderer.py:395 src/iac_code/ui/renderer.py:418
+#: src/iac_code/ui/renderer.py:396 src/iac_code/ui/renderer.py:419
 msgid "Status"
 msgstr "Status"
 
-#: src/iac_code/ui/renderer.py:416
+#: src/iac_code/ui/renderer.py:417
 msgid "Account ID"
 msgstr "ID da conta"
 
-#: src/iac_code/ui/renderer.py:494
+#: src/iac_code/ui/renderer.py:495
 #, python-brace-format
 msgid "Done ({child_count} tool uses{token_info}{elapsed})"
 msgstr "Concluído ({child_count} usos de ferramenta{token_info}{elapsed})"
 
-#: src/iac_code/ui/renderer.py:524
+#: src/iac_code/ui/renderer.py:525
 #, python-brace-format
 msgid "+ {count} more tool uses (ctrl+o to expand)"
 msgstr "+ {count} usos adicionais de ferramenta (ctrl+o para expandir)"
 
-#: src/iac_code/ui/renderer.py:1122
+#: src/iac_code/ui/renderer.py:1128
 #, python-brace-format
 msgid "Context auto-compacted: {original} → {compacted} tokens"
 msgstr "Contexto compactado automaticamente: {original} → {compacted} tokens"
 
-#: src/iac_code/ui/renderer.py:1199
+#: src/iac_code/ui/renderer.py:1212
 msgid "Operation cancelled."
 msgstr "Operação cancelada."
 
-#: src/iac_code/ui/renderer.py:1204
+#: src/iac_code/ui/renderer.py:1217
 msgid "No API key configured."
 msgstr "Nenhuma API key configurada."
 
-#: src/iac_code/ui/renderer.py:1204
+#: src/iac_code/ui/renderer.py:1217
 msgid "Please run /auth to set up your LLM provider and API key."
 msgstr "Execute /auth para configurar seu provedor LLM e API key."
 
-#: src/iac_code/ui/renderer.py:1208
+#: src/iac_code/ui/renderer.py:1221
 #, python-brace-format
 msgid "Error: {error}"
 msgstr "Erro: {error}"
 
-#: src/iac_code/ui/renderer.py:1276
+#: src/iac_code/ui/renderer.py:1289
 msgid "Allow this action?"
 msgstr "Permitir esta ação?"
 
-#: src/iac_code/ui/renderer.py:1279
+#: src/iac_code/ui/renderer.py:1292
 msgid "Yes, allow once"
 msgstr "Sim, permitir uma vez"
 
-#: src/iac_code/ui/renderer.py:1280
+#: src/iac_code/ui/renderer.py:1293
 msgid "Yes, allow always for this tool"
 msgstr "Sim, sempre permitir para esta ferramenta"
 
-#: src/iac_code/ui/renderer.py:1281
+#: src/iac_code/ui/renderer.py:1294
 msgid "No, reject once"
 msgstr "Não, rejeitar uma vez"
 
-#: src/iac_code/ui/renderer.py:1281
+#: src/iac_code/ui/renderer.py:1294
 msgid "default"
 msgstr "padrão"
 
-#: src/iac_code/ui/renderer.py:1282
+#: src/iac_code/ui/renderer.py:1295
 msgid "No, always reject this tool"
 msgstr "Não, sempre rejeitar esta ferramenta"
 

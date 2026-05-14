@@ -84,6 +84,8 @@ class JsonWriter:
             self._usage = {
                 "input_tokens": event.usage.input_tokens,
                 "output_tokens": event.usage.output_tokens,
+                "cache_creation_input_tokens": event.usage.cache_creation_input_tokens,
+                "cache_read_input_tokens": event.usage.cache_read_input_tokens,
             }
         elif isinstance(event, ErrorEvent):
             self._error = event.error

@@ -5,6 +5,7 @@ from iac_code.agent.system_prompt import (
     SystemPromptBuilder,
     _build_cloud_config_section,
     build_system_prompt,
+    split_by_dynamic_boundary,
 )
 
 
@@ -104,6 +105,37 @@ class TestBuildSystemPrompt:
         lines = prompt.split("\n")
         memory_lines = [line for line in lines if line.strip().startswith("# Memory")]
         assert len(memory_lines) == 0
+
+
+class TestSplitByDynamicBoundary:
+    def test_splits_at_boundary(self):
+        prompt = f"STATIC PART\n\n{DYNAMIC_BOUNDARY}\n\nDYNAMIC PART"
+        static, dynamic = split_by_dynamic_boundary(prompt)
+        assert static == "STATIC PART"
+        assert dynamic == "DYNAMIC PART"
+
+    def test_no_boundary_returns_full_as_static(self):
+        prompt = "Full prompt without boundary"
+        static, dynamic = split_by_dynamic_boundary(prompt)
+        assert static == prompt
+        assert dynamic == ""
+
+    def test_empty_dynamic_part(self):
+        prompt = f"STATIC\n\n{DYNAMIC_BOUNDARY}"
+        static, dynamic = split_by_dynamic_boundary(prompt)
+        assert static == "STATIC"
+        assert dynamic == ""
+
+    def test_roundtrip_with_builder(self):
+        builder = SystemPromptBuilder()
+        builder.add_cached_section("s1", lambda: "STATIC_A", priority=100, is_static=True)
+        builder.add_cached_section("s2", lambda: "DYNAMIC_B", priority=50, is_static=False)
+        full = builder.build()
+        static, dynamic = split_by_dynamic_boundary(full)
+        assert "STATIC_A" in static
+        assert "DYNAMIC_B" in dynamic
+        assert DYNAMIC_BOUNDARY not in static
+        assert DYNAMIC_BOUNDARY not in dynamic
 
 
 class TestBuildCloudConfigSection:

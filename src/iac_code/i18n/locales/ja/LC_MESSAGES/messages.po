@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: iac-code 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-14 15:54+0800\n"
+"POT-Creation-Date: 2026-05-15 09:48+0800\n"
 "PO-Revision-Date: 2026-05-13 00:00+0000\n"
 "Last-Translator: \n"
 "Language: ja\n"
@@ -343,7 +343,7 @@ msgid "Credential"
 msgstr "クレデンシャル"
 
 #: src/iac_code/commands/auth.py:778 src/iac_code/commands/auth.py:875
-#: src/iac_code/commands/auth.py:980 src/iac_code/ui/renderer.py:417
+#: src/iac_code/commands/auth.py:980 src/iac_code/ui/renderer.py:418
 msgid "Region"
 msgstr "リージョン"
 
@@ -562,7 +562,7 @@ msgid ""
 "/auth to configure."
 msgstr "プロバイダー '{provider}' の API キーが設定されていません（モデル: {model}）。/auth を実行して設定してください。"
 
-#: src/iac_code/providers/openai_provider.py:263
+#: src/iac_code/providers/openai_provider.py:286
 #, python-brace-format
 msgid ""
 "API returned no data. Please check that your API Base URL is correct "
@@ -572,7 +572,7 @@ msgstr ""
 "API からデータが返りませんでした。API Base URL が正しいか確認してください（現在：{base_url}）。 多くの OpenAI "
 "互換エンドポイントでは /v1 接尾辞が必要です（例：{base_url}/v1）。"
 
-#: src/iac_code/providers/openai_provider.py:307
+#: src/iac_code/providers/openai_provider.py:327
 #, python-brace-format
 msgid ""
 "API returned an invalid response. Please check that your API Base URL is "
@@ -1047,86 +1047,86 @@ msgstr "デバッグモード"
 msgid "Log file"
 msgstr "ログファイル"
 
-#: src/iac_code/ui/renderer.py:350 src/iac_code/ui/renderer.py:620
-#: src/iac_code/ui/renderer.py:1335
+#: src/iac_code/ui/renderer.py:351 src/iac_code/ui/renderer.py:621
+#: src/iac_code/ui/renderer.py:1348
 #, python-brace-format
 msgid "Thought for {seconds:.1f}s"
 msgstr "{seconds:.1f} 秒考えました"
 
-#: src/iac_code/ui/renderer.py:366 src/iac_code/ui/renderer.py:652
-#: src/iac_code/ui/renderer.py:1356
+#: src/iac_code/ui/renderer.py:367 src/iac_code/ui/renderer.py:653
+#: src/iac_code/ui/renderer.py:1369
 msgid "(ctrl+o to expand)"
 msgstr "（ctrl+o で展開）"
 
-#: src/iac_code/ui/renderer.py:393
+#: src/iac_code/ui/renderer.py:394
 msgid "Resource"
 msgstr "リソース"
 
-#: src/iac_code/ui/renderer.py:394
+#: src/iac_code/ui/renderer.py:395
 msgid "Type"
 msgstr "種類"
 
-#: src/iac_code/ui/renderer.py:395 src/iac_code/ui/renderer.py:418
+#: src/iac_code/ui/renderer.py:396 src/iac_code/ui/renderer.py:419
 msgid "Status"
 msgstr "状態"
 
-#: src/iac_code/ui/renderer.py:416
+#: src/iac_code/ui/renderer.py:417
 msgid "Account ID"
 msgstr "アカウント ID"
 
-#: src/iac_code/ui/renderer.py:494
+#: src/iac_code/ui/renderer.py:495
 #, python-brace-format
 msgid "Done ({child_count} tool uses{token_info}{elapsed})"
 msgstr "完了（ツール使用 {child_count} 回{token_info}{elapsed}）"
 
-#: src/iac_code/ui/renderer.py:524
+#: src/iac_code/ui/renderer.py:525
 #, python-brace-format
 msgid "+ {count} more tool uses (ctrl+o to expand)"
 msgstr "+ ツール使用がさらに {count} 回（ctrl+o で展開）"
 
-#: src/iac_code/ui/renderer.py:1122
+#: src/iac_code/ui/renderer.py:1128
 #, python-brace-format
 msgid "Context auto-compacted: {original} → {compacted} tokens"
 msgstr "コンテキストを自動圧縮しました：{original} → {compacted} tokens"
 
-#: src/iac_code/ui/renderer.py:1199
+#: src/iac_code/ui/renderer.py:1212
 msgid "Operation cancelled."
 msgstr "操作をキャンセルしました。"
 
-#: src/iac_code/ui/renderer.py:1204
+#: src/iac_code/ui/renderer.py:1217
 msgid "No API key configured."
 msgstr "API key が設定されていません。"
 
-#: src/iac_code/ui/renderer.py:1204
+#: src/iac_code/ui/renderer.py:1217
 msgid "Please run /auth to set up your LLM provider and API key."
 msgstr "/auth を実行して LLM プロバイダーと API key を設定してください。"
 
-#: src/iac_code/ui/renderer.py:1208
+#: src/iac_code/ui/renderer.py:1221
 #, python-brace-format
 msgid "Error: {error}"
 msgstr "エラー：{error}"
 
-#: src/iac_code/ui/renderer.py:1276
+#: src/iac_code/ui/renderer.py:1289
 msgid "Allow this action?"
 msgstr "この操作を許可しますか？"
 
-#: src/iac_code/ui/renderer.py:1279
+#: src/iac_code/ui/renderer.py:1292
 msgid "Yes, allow once"
 msgstr "はい、今回のみ許可"
 
-#: src/iac_code/ui/renderer.py:1280
+#: src/iac_code/ui/renderer.py:1293
 msgid "Yes, allow always for this tool"
 msgstr "はい、このツールは常に許可"
 
-#: src/iac_code/ui/renderer.py:1281
+#: src/iac_code/ui/renderer.py:1294
 msgid "No, reject once"
 msgstr "いいえ、今回は拒否"
 
-#: src/iac_code/ui/renderer.py:1281
+#: src/iac_code/ui/renderer.py:1294
 msgid "default"
 msgstr "既定"
 
-#: src/iac_code/ui/renderer.py:1282
+#: src/iac_code/ui/renderer.py:1295
 msgid "No, always reject this tool"
 msgstr "いいえ、このツールは常に拒否"
 

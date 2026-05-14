@@ -366,3 +366,59 @@ class TestOpenAIComplete:
 
         with pytest.raises(RuntimeError, match="invalid response"):
             await provider.complete(messages=[Message.user("x")], system="")
+
+
+@pytest.mark.asyncio
+class TestOpenAICacheMetrics:
+    """Tests for prompt_tokens_details (cache metrics) parsing."""
+
+    async def test_stream_reads_cached_tokens(self):
+        chunks = [
+            ns(
+                usage=ns(
+                    prompt_tokens=500,
+                    completion_tokens=20,
+                    prompt_tokens_details=ns(cached_tokens=300, cache_creation_input_tokens=100),
+                ),
+                choices=[ns(finish_reason="stop", delta=ns(content="ok", tool_calls=None))],
+            ),
+        ]
+        client = FakeOpenAIClient(stream_chunks=chunks)
+        provider = OpenAIProvider(model="gpt-4.1", client=client)
+
+        out = [e async for e in provider.stream(messages=[Message.user("hi")], system="sys")]
+        end = out[-1]
+        assert end.usage.cache_read_input_tokens == 300
+        assert end.usage.cache_creation_input_tokens == 100
+
+    async def test_stream_without_details_defaults_to_zero(self):
+        chunks = [
+            ns(
+                usage=ns(prompt_tokens=100, completion_tokens=10),
+                choices=[ns(finish_reason="stop", delta=ns(content="ok", tool_calls=None))],
+            ),
+        ]
+        client = FakeOpenAIClient(stream_chunks=chunks)
+        provider = OpenAIProvider(model="gpt-4.1", client=client)
+
+        out = [e async for e in provider.stream(messages=[Message.user("hi")], system="sys")]
+        end = out[-1]
+        assert end.usage.cache_read_input_tokens == 0
+        assert end.usage.cache_creation_input_tokens == 0
+
+    async def test_complete_reads_cached_tokens(self):
+        response = ns(
+            id="cmpl_cache",
+            choices=[ns(finish_reason="stop", message=ns(content="hi", tool_calls=None))],
+            usage=ns(
+                prompt_tokens=500,
+                completion_tokens=20,
+                prompt_tokens_details=ns(cached_tokens=400, cache_creation_input_tokens=0),
+            ),
+        )
+        client = FakeOpenAIClient(create_response=response)
+        provider = OpenAIProvider(model="gpt-4.1", client=client)
+
+        result = await provider.complete(messages=[Message.user("hi")], system="sys")
+        assert result.usage.cache_read_input_tokens == 400
+        assert result.usage.cache_creation_input_tokens == 0
