@@ -16,6 +16,17 @@ from datetime import datetime
 DYNAMIC_BOUNDARY = "--- DYNAMIC_BOUNDARY ---"
 
 
+def split_by_dynamic_boundary(system_prompt: str) -> tuple[str, str]:
+    """Split *system_prompt* into ``(static, dynamic)`` at :data:`DYNAMIC_BOUNDARY`.
+
+    Returns ``(full_prompt, "")`` when the boundary is absent.
+    """
+    if DYNAMIC_BOUNDARY in system_prompt:
+        parts = system_prompt.split(DYNAMIC_BOUNDARY, 1)
+        return parts[0].rstrip(), parts[1].lstrip()
+    return system_prompt, ""
+
+
 @dataclass
 class _Section:
     name: str

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: iac-code 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-14 15:54+0800\n"
+"POT-Creation-Date: 2026-05-15 09:48+0800\n"
 "PO-Revision-Date: 2026-04-02 00:00+0000\n"
 "Last-Translator: \n"
 "Language: zh\n"
@@ -341,7 +341,7 @@ msgid "Credential"
 msgstr "凭证"
 
 #: src/iac_code/commands/auth.py:778 src/iac_code/commands/auth.py:875
-#: src/iac_code/commands/auth.py:980 src/iac_code/ui/renderer.py:417
+#: src/iac_code/commands/auth.py:980 src/iac_code/ui/renderer.py:418
 msgid "Region"
 msgstr "地域"
 
@@ -560,7 +560,7 @@ msgid ""
 "/auth to configure."
 msgstr "提供商 '{provider}' 未配置 API 密钥（模型: {model}）。请运行 /auth 进行配置。"
 
-#: src/iac_code/providers/openai_provider.py:263
+#: src/iac_code/providers/openai_provider.py:286
 #, python-brace-format
 msgid ""
 "API returned no data. Please check that your API Base URL is correct "
@@ -570,7 +570,7 @@ msgstr ""
 "API 未返回数据。请检查您的 API Base URL 是否正确（当前：{base_url}）。许多 OpenAI 兼容端点需要 /v1 "
 "后缀（如 {base_url}/v1）。"
 
-#: src/iac_code/providers/openai_provider.py:307
+#: src/iac_code/providers/openai_provider.py:327
 #, python-brace-format
 msgid ""
 "API returned an invalid response. Please check that your API Base URL is "
@@ -1045,86 +1045,86 @@ msgstr "调试模式"
 msgid "Log file"
 msgstr "日志文件"
 
-#: src/iac_code/ui/renderer.py:350 src/iac_code/ui/renderer.py:620
-#: src/iac_code/ui/renderer.py:1335
+#: src/iac_code/ui/renderer.py:351 src/iac_code/ui/renderer.py:621
+#: src/iac_code/ui/renderer.py:1348
 #, python-brace-format
 msgid "Thought for {seconds:.1f}s"
 msgstr "思考完成（耗时 {seconds:.1f}s）"
 
-#: src/iac_code/ui/renderer.py:366 src/iac_code/ui/renderer.py:652
-#: src/iac_code/ui/renderer.py:1356
+#: src/iac_code/ui/renderer.py:367 src/iac_code/ui/renderer.py:653
+#: src/iac_code/ui/renderer.py:1369
 msgid "(ctrl+o to expand)"
 msgstr "(ctrl+o 展开)"
 
-#: src/iac_code/ui/renderer.py:393
+#: src/iac_code/ui/renderer.py:394
 msgid "Resource"
 msgstr "资源"
 
-#: src/iac_code/ui/renderer.py:394
+#: src/iac_code/ui/renderer.py:395
 msgid "Type"
 msgstr "类型"
 
-#: src/iac_code/ui/renderer.py:395 src/iac_code/ui/renderer.py:418
+#: src/iac_code/ui/renderer.py:396 src/iac_code/ui/renderer.py:419
 msgid "Status"
 msgstr "状态"
 
-#: src/iac_code/ui/renderer.py:416
+#: src/iac_code/ui/renderer.py:417
 msgid "Account ID"
 msgstr "账号 ID"
 
-#: src/iac_code/ui/renderer.py:494
+#: src/iac_code/ui/renderer.py:495
 #, python-brace-format
 msgid "Done ({child_count} tool uses{token_info}{elapsed})"
 msgstr "完成（{child_count} 次工具调用{token_info}{elapsed}）"
 
-#: src/iac_code/ui/renderer.py:524
+#: src/iac_code/ui/renderer.py:525
 #, python-brace-format
 msgid "+ {count} more tool uses (ctrl+o to expand)"
 msgstr "+ {count} 个工具调用 (ctrl+o 展开)"
 
-#: src/iac_code/ui/renderer.py:1122
+#: src/iac_code/ui/renderer.py:1128
 #, python-brace-format
 msgid "Context auto-compacted: {original} → {compacted} tokens"
 msgstr "上下文自动压缩：{original} → {compacted} tokens"
 
-#: src/iac_code/ui/renderer.py:1199
+#: src/iac_code/ui/renderer.py:1212
 msgid "Operation cancelled."
 msgstr "操作已取消。"
 
-#: src/iac_code/ui/renderer.py:1204
+#: src/iac_code/ui/renderer.py:1217
 msgid "No API key configured."
 msgstr "尚未配置 API 密钥。"
 
-#: src/iac_code/ui/renderer.py:1204
+#: src/iac_code/ui/renderer.py:1217
 msgid "Please run /auth to set up your LLM provider and API key."
 msgstr "请运行 /auth 设置您的 LLM 提供商和 API 密钥。"
 
-#: src/iac_code/ui/renderer.py:1208
+#: src/iac_code/ui/renderer.py:1221
 #, python-brace-format
 msgid "Error: {error}"
 msgstr "错误：{error}"
 
-#: src/iac_code/ui/renderer.py:1276
+#: src/iac_code/ui/renderer.py:1289
 msgid "Allow this action?"
 msgstr "是否允许执行此操作？"
 
-#: src/iac_code/ui/renderer.py:1279
+#: src/iac_code/ui/renderer.py:1292
 msgid "Yes, allow once"
 msgstr "是，仅本次允许"
 
-#: src/iac_code/ui/renderer.py:1280
+#: src/iac_code/ui/renderer.py:1293
 msgid "Yes, allow always for this tool"
 msgstr "是，始终允许此工具"
 
-#: src/iac_code/ui/renderer.py:1281
+#: src/iac_code/ui/renderer.py:1294
 msgid "No, reject once"
 msgstr "否，仅本次拒绝"
 
-#: src/iac_code/ui/renderer.py:1281
+#: src/iac_code/ui/renderer.py:1294
 msgid "default"
 msgstr "默认"
 
-#: src/iac_code/ui/renderer.py:1282
+#: src/iac_code/ui/renderer.py:1295
 msgid "No, always reject this tool"
 msgstr "否，始终拒绝此工具"
 

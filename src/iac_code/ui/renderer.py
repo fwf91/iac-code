@@ -49,6 +49,7 @@ from iac_code.types.stream_events import (
     ToolResultEvent,
     ToolUseEndEvent,
     ToolUseStartEvent,
+    Usage,
 )
 from iac_code.ui.components.select import OptionType, Select, SelectLayout, TextOption
 from iac_code.ui.spinner import ShimmerSpinner
@@ -759,6 +760,9 @@ class Renderer:
         # Map tool_use_id → _ToolCallRecord for partial-input accumulation
         tool_records: dict[str, _ToolCallRecord] = {}
 
+        # Turn-level token usage accumulator (summed across MessageEndEvents)
+        turn_usage = Usage()
+
         try:
             async for event in events:
                 # After a mid-stream transcript view, tear down the stale
@@ -1017,6 +1021,8 @@ class Renderer:
                             self._quiet_stop_live(live)
                             live = None
                         self._print_segments_to_scrollback(segments, "")
+                        self._print_turn_usage(turn_usage)
+                        turn_usage = Usage()
                         segments.clear()
                         tool_records.clear()
 
@@ -1165,6 +1171,11 @@ class Renderer:
                 # ── Message end ─────────────────────────────────
                 elif isinstance(event, MessageEndEvent):
                     _finalize_thinking()
+                    # Accumulate turn-level token usage
+                    turn_usage.input_tokens += event.usage.input_tokens
+                    turn_usage.output_tokens += event.usage.output_tokens
+                    turn_usage.cache_creation_input_tokens += event.usage.cache_creation_input_tokens
+                    turn_usage.cache_read_input_tokens += event.usage.cache_read_input_tokens
                     # Finalize remaining text
                     if text_buffer:
                         segments.append(_Segment(kind="text", text=text_buffer))
@@ -1190,6 +1201,8 @@ class Renderer:
                             self._quiet_stop_live(live)
                             live = None
                         self._print_segments_to_scrollback(segments, "")
+                        self._print_turn_usage(turn_usage)
+                        turn_usage = Usage()
                         segments.clear()
                         tool_records.clear()
                     # DON'T stop task_spinner — it persists across turns
@@ -1354,6 +1367,34 @@ class Renderer:
 
         if not self._verbose and self._any_segment_has_verbose(segments):
             self.console.print(Text("  " + _("(ctrl+o to expand)"), style="dim"))
+
+    def _print_turn_usage(self, usage: Usage) -> None:
+        """Print a dim one-line token/cache summary after a completed turn.
+
+        Only shown when debug logging is active (``--debug`` flag or ``/debug`` command).
+        """
+        from iac_code.utils.log import is_debug_enabled
+
+        if not is_debug_enabled():
+            return
+        if not usage.input_tokens and not usage.output_tokens:
+            return
+        parts: list[str] = []
+        parts.append(self._format_token_count(usage.input_tokens, "input"))
+        parts.append(self._format_token_count(usage.output_tokens, "output"))
+        if usage.cache_read_input_tokens:
+            parts.append(self._format_token_count(usage.cache_read_input_tokens, "cache_read"))
+        if usage.cache_creation_input_tokens:
+            parts.append(self._format_token_count(usage.cache_creation_input_tokens, "cache_create"))
+        self.console.print(Text("  " + " · ".join(parts), style="dim"))
+
+    @staticmethod
+    def _format_token_count(count: int, label: str) -> str:
+        if count >= 1_000_000:
+            return f"{count / 1_000_000:.1f}M {label}"
+        if count >= 1_000:
+            return f"{count / 1_000:.1f}k {label}"
+        return f"{count} {label}"
 
     def replay_history(self, messages: list) -> None:
         """Replay saved Message objects to scrollback with 1:1 visual fidelity."""

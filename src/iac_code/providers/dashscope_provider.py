@@ -2,13 +2,29 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
+from iac_code.agent.system_prompt import split_by_dynamic_boundary
+from iac_code.providers.base import Message
 from iac_code.providers.openai_provider import OpenAIProvider
 from iac_code.providers.thinking import ThinkingFamily, get_thinking_spec
 
 DASHSCOPE_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 DASHSCOPE_TOKEN_PLAN_BASE_URL = "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
+
+# Models that support DashScope explicit context cache (cache_control markers).
+# Prefix-matched against the model name.  Extend when new models are added.
+# Ref: https://help.aliyun.com/zh/model-studio/context-cache
+_EXPLICIT_CACHE_MODEL_PREFIXES: tuple[str, ...] = (
+    "qwen3-coder-plus",
+    "qwen3-coder-flash",
+    "qwen3.5-plus",
+    "qwen3.6-plus",
+    "qwen-plus",
+    "qwen3.5-flash",
+    "qwen3.6-flash",
+    "qwen-flash",
+)
 
 
 class DashScopeProvider(OpenAIProvider):
@@ -39,6 +55,62 @@ class DashScopeProvider(OpenAIProvider):
         # Instance attribute shadows the class attribute so per-variant
         # thinking-registry lookups resolve to the right MODEL_THINKING bucket.
         self._PROVIDER_KEY = provider_key
+
+    # -- Explicit context cache ------------------------------------------------
+
+    def _supports_explicit_cache(self) -> bool:
+        return self._model.startswith(_EXPLICIT_CACHE_MODEL_PREFIXES)
+
+    def _build_api_messages(
+        self,
+        messages: list[Message],
+        system: str,
+    ) -> list[dict[str, Any]]:
+        api_messages: list[dict[str, Any]] = []
+        if system:
+            if self._supports_explicit_cache():
+                static_part, dynamic_part = split_by_dynamic_boundary(system)
+                content_blocks: list[dict[str, Any]] = [
+                    {"type": "text", "text": static_part, "cache_control": {"type": "ephemeral"}},
+                ]
+                if dynamic_part:
+                    content_blocks.append({"type": "text", "text": dynamic_part})
+                api_messages.append({"role": "system", "content": content_blocks})
+            else:
+                api_messages.append({"role": "system", "content": system})
+        api_messages.extend(self._convert_messages(messages))
+
+        if self._supports_explicit_cache():
+            self._mark_last_user_message_cacheable(api_messages)
+
+        return api_messages
+
+    @staticmethod
+    def _mark_last_user_message_cacheable(api_messages: list[dict[str, Any]]) -> None:
+        """Add ``cache_control`` to the last user message in *api_messages*.
+
+        This extends the cache prefix to cover all conversation history up to
+        and including the most recent user turn, so that successive rounds hit
+        the cached prefix.  DashScope allows up to 4 ``cache_control`` markers;
+        we use one for system-static and one here.
+        """
+        for msg in reversed(api_messages):
+            if msg.get("role") != "user":
+                continue
+            content = msg.get("content")
+            if isinstance(content, str):
+                msg["content"] = [{"type": "text", "text": content, "cache_control": {"type": "ephemeral"}}]
+            elif isinstance(content, list):
+                # Content is already a list of blocks — tag the last text block.
+                for block in reversed(content):
+                    if isinstance(block, dict):
+                        block_dict: dict[str, Any] = cast(dict[str, Any], block)
+                        if block_dict.get("type") == "text":
+                            block_dict["cache_control"] = {"type": "ephemeral"}
+                            break
+            break
+
+    # -- Thinking kwargs -------------------------------------------------------
 
     def _build_thinking_kwargs(self) -> dict[str, Any]:
         spec = get_thinking_spec(self._PROVIDER_KEY, self._model)

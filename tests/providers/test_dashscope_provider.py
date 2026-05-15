@@ -1,11 +1,16 @@
 """Tests for DashScope provider — OpenAI-compatible endpoint."""
 
+import pytest
+
+from iac_code.agent.system_prompt import DYNAMIC_BOUNDARY
 from iac_code.providers.base import Message, ToolDefinition
 from iac_code.providers.dashscope_provider import (
+    _EXPLICIT_CACHE_MODEL_PREFIXES,
     DASHSCOPE_BASE_URL,
     DashScopeProvider,
 )
 from iac_code.providers.openai_provider import OpenAIProvider
+from tests.providers._fakes import FakeOpenAIClient, ns
 
 
 class TestDashScopeProvider:
@@ -133,3 +138,139 @@ class TestDashScopeProviderKeyInjection:
             provider_key="dashscope_token_plan",
         )
         assert p._PROVIDER_KEY == "dashscope_token_plan"
+
+
+class TestDashScopeExplicitCache:
+    """Tests for DashScope explicit context cache (cache_control markers)."""
+
+    @pytest.mark.parametrize("prefix", _EXPLICIT_CACHE_MODEL_PREFIXES)
+    def test_supported_model_prefixes(self, prefix):
+        p = DashScopeProvider(model=prefix, api_key="k")
+        assert p._supports_explicit_cache()
+
+    def test_unsupported_model_returns_false(self):
+        p = DashScopeProvider(model="kimi-k2.6", api_key="k")
+        assert not p._supports_explicit_cache()
+
+    def test_unknown_model_returns_false(self):
+        p = DashScopeProvider(model="some-random-model", api_key="k")
+        assert not p._supports_explicit_cache()
+
+    def test_build_api_messages_with_cache_control(self):
+        """Supported model: system message uses array content with cache_control."""
+        p = DashScopeProvider(model="qwen3.5-plus", api_key="k")
+        system = f"STATIC\n\n{DYNAMIC_BOUNDARY}\n\nDYNAMIC"
+        msgs = [Message.user("hello")]
+        api = p._build_api_messages(msgs, system)
+
+        sys_msg = api[0]
+        assert sys_msg["role"] == "system"
+        assert isinstance(sys_msg["content"], list)
+        assert len(sys_msg["content"]) == 2
+        assert sys_msg["content"][0]["text"] == "STATIC"
+        assert sys_msg["content"][0]["cache_control"] == {"type": "ephemeral"}
+        assert sys_msg["content"][1]["text"] == "DYNAMIC"
+        assert "cache_control" not in sys_msg["content"][1]
+
+    def test_build_api_messages_without_dynamic_part(self):
+        """No DYNAMIC_BOUNDARY → entire prompt cached as one block."""
+        p = DashScopeProvider(model="qwen3.5-plus", api_key="k")
+        api = p._build_api_messages([Message.user("hi")], "ALL STATIC")
+
+        sys_msg = api[0]
+        assert isinstance(sys_msg["content"], list)
+        assert len(sys_msg["content"]) == 1
+        assert sys_msg["content"][0]["text"] == "ALL STATIC"
+        assert sys_msg["content"][0]["cache_control"] == {"type": "ephemeral"}
+
+    def test_build_api_messages_unsupported_model_plain_string(self):
+        """Unsupported model: system message stays as plain string."""
+        p = DashScopeProvider(model="deepseek-v4-pro", api_key="k")
+        api = p._build_api_messages([Message.user("hi")], "sys prompt")
+
+        sys_msg = api[0]
+        assert sys_msg["role"] == "system"
+        assert sys_msg["content"] == "sys prompt"
+
+    def test_build_api_messages_empty_system(self):
+        p = DashScopeProvider(model="qwen3.5-plus", api_key="k")
+        api = p._build_api_messages([Message.user("hi")], "")
+        assert api[0]["role"] == "user"
+
+    def test_last_user_message_gets_cache_control(self):
+        """Supported model: last user message is wrapped with cache_control."""
+        p = DashScopeProvider(model="qwen3.5-plus", api_key="k")
+        msgs = [Message.user("first"), Message.assistant_text("reply"), Message.user("second")]
+        api = p._build_api_messages(msgs, "sys")
+
+        last_user = api[-1]
+        assert last_user["role"] == "user"
+        assert isinstance(last_user["content"], list)
+        assert last_user["content"][0]["text"] == "second"
+        assert last_user["content"][0]["cache_control"] == {"type": "ephemeral"}
+
+    def test_first_user_not_tagged_when_multiple(self):
+        """Only the *last* user message gets cache_control, not earlier ones."""
+        p = DashScopeProvider(model="qwen3.5-plus", api_key="k")
+        msgs = [Message.user("first"), Message.assistant_text("reply"), Message.user("second")]
+        api = p._build_api_messages(msgs, "sys")
+
+        first_user = api[1]
+        assert first_user["role"] == "user"
+        assert isinstance(first_user["content"], str)
+
+    def test_unsupported_model_no_user_cache_control(self):
+        """Unsupported model: user messages stay as plain strings."""
+        p = DashScopeProvider(model="deepseek-v4-pro", api_key="k")
+        msgs = [Message.user("hello")]
+        api = p._build_api_messages(msgs, "sys")
+
+        user_msg = api[-1]
+        assert user_msg["content"] == "hello"
+
+
+@pytest.mark.asyncio
+class TestDashScopeCacheMetrics:
+    """Tests that DashScope streaming path reads cache metrics from response."""
+
+    async def test_stream_captures_cache_metrics(self):
+        chunks = [
+            ns(
+                usage=None,
+                choices=[ns(finish_reason=None, delta=ns(content="hi", tool_calls=None))],
+            ),
+            ns(
+                usage=ns(
+                    prompt_tokens=1000,
+                    completion_tokens=50,
+                    prompt_tokens_details=ns(cached_tokens=800, cache_creation_input_tokens=0),
+                ),
+                choices=[ns(finish_reason="stop", delta=ns(content=None, tool_calls=None))],
+            ),
+        ]
+        client = FakeOpenAIClient(stream_chunks=chunks)
+        provider = DashScopeProvider(model="qwen3.5-plus", api_key="k")
+        provider._client = client
+
+        events = [e async for e in provider.stream(messages=[Message.user("test")], system="sys")]
+        end = events[-1]
+        assert end.type == "message_end"
+        assert end.usage.cache_read_input_tokens == 800
+        assert end.usage.cache_creation_input_tokens == 0
+        assert end.usage.input_tokens == 1000
+
+    async def test_stream_without_cache_details(self):
+        chunks = [
+            ns(
+                usage=ns(prompt_tokens=100, completion_tokens=10),
+                choices=[ns(finish_reason="stop", delta=ns(content="x", tool_calls=None))],
+            ),
+        ]
+        client = FakeOpenAIClient(stream_chunks=chunks)
+        provider = DashScopeProvider(model="deepseek-v4-pro", api_key="k")
+        provider._client = client
+
+        events = [e async for e in provider.stream(messages=[Message.user("test")], system="sys")]
+        end = events[-1]
+        assert end.usage.cache_read_input_tokens == 0
+        assert end.usage.cache_creation_input_tokens == 0
