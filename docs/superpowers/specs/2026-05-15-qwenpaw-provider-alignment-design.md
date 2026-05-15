@@ -25,13 +25,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
-
-
-class CacheStrategy(Enum):
-    NONE = "none"
-    PASSTHROUGH = "passthrough"
-    EXPLICIT = "explicit"
 
 
 @dataclass(frozen=True)
@@ -50,8 +43,6 @@ class ProviderDescriptor:
     models: list[ModelEntry] = field(default_factory=list)
     require_api_key: bool = True
     is_local: bool = False
-    supports_stream_options: bool = False
-    cache_strategy: CacheStrategy = CacheStrategy.PASSTHROUGH
     qwenpaw_provider_ids: list[str] = field(default_factory=list)
     qwenpaw_chat_model: str = "OpenAIChatModel"
 
@@ -67,11 +58,34 @@ class ProviderDescriptor:
         return [m.id for m in self.models]
 ```
 
+**从 ProviderDescriptor 中移除的字段及原因：**
+
+- **`cache_strategy`**：缓存决策是**模型级别**而非 provider 级别。同一个 DashScope provider 下，`qwen3.6-plus` 支持显式 cache_control 标记，但 `deepseek-v4-pro` 不支持。缓存逻辑保留在 provider class 内部（如 `DashScopeProvider._supports_explicit_cache()` 按模型前缀判断）。
+- **`supports_stream_options`**：这是 provider class 的运行时行为属性（如 `DashScopeProvider.supports_stream_options = True`），不应在描述符中重复声明。保留为 class attribute。
+
 全局注册表 `PROVIDER_REGISTRY: dict[str, ProviderDescriptor]` 在模块加载时由各 provider 的声明构建。
 
-#### 1.2 create_provider 重构
+#### 1.2 Provider 构造函数统一
 
-从 if/elif 链变为注册表查找：
+**现状问题**：各 provider 构造函数签名不一致：
+
+| Provider | 参数 | 问题 |
+|---|---|---|
+| `OpenAIProvider` | `(model, api_key, base_url, client, effort)` | 无 `provider_key` |
+| `DashScopeProvider` | `(model, api_key, effort, base_url, provider_key)` | 有 `provider_key` |
+| `DeepSeekProvider` | `(model, api_key, effort)` | 无 `base_url`，硬编码 URL |
+| `AnthropicProvider` | `(model, api_key, base_url, max_tokens, client, effort)` | 无 `provider_key` |
+
+**解决方案**：统一所有 provider 构造函数接受 `(model, api_key, base_url, effort, provider_key, **kwargs)`。
+
+具体修改：
+- `OpenAIProvider.__init__`：新增 `provider_key` 参数（默认 `"openai"`），赋值给 `self._PROVIDER_KEY`
+- `DeepSeekProvider.__init__`：新增 `base_url` 参数（默认 `DEEPSEEK_BASE_URL`），不再硬编码。`provider_key` 默认 `"deepseek"`
+- `AnthropicProvider.__init__`：新增 `provider_key` 参数（默认 `"anthropic"`），赋值给 `self._PROVIDER_KEY`
+- `DashScopeProvider.__init__`：已支持，无需修改
+- 所有新 provider 子类：接受 `base_url` 和 `provider_key`，**不硬编码** base_url（由 registry 提供默认值）
+
+这样 `create_provider` 可以统一传参：
 
 ```python
 def create_provider(
@@ -105,16 +119,38 @@ def create_provider(
 新增 `provider_key_override` 参数供 QwenPaw 模式使用（已知 provider_key，无需推断）。
 新增 `base_url` 参数供 QwenPaw 模式注入 base_url。
 
+**新 thin subclass 模式**（以 KimiProvider 为例）：
+
+```python
+class KimiProvider(OpenAIProvider):
+    """Kimi (Moonshot AI) — OpenAI-compatible endpoint."""
+
+    _PROVIDER_KEY = "kimi_cn"  # 默认值，会被 provider_key 参数覆盖
+
+    def __init__(
+        self,
+        model: str,
+        api_key: str | None = None,
+        base_url: str | None = None,  # 不硬编码！由 registry 提供
+        effort: str | None = None,
+        provider_key: str = "kimi_cn",
+        **kwargs,
+    ) -> None:
+        super().__init__(model=model, api_key=api_key, base_url=base_url, effort=effort)
+        self._PROVIDER_KEY = provider_key
+```
+
+与 DeepSeekProvider 的区别：**不硬编码 base_url**。同一个 KimiProvider class 可以服务 kimi_cn（moonshot.cn）和 kimi_intl（moonshot.ai），通过 registry 中不同的 descriptor 提供不同的 base_url。
+
 #### 1.3 config.py 简化
 
-以下映射表从 `PROVIDER_REGISTRY` 派生，消除重复声明：
+以下映射表从 `PROVIDER_REGISTRY` 自动派生或直接引用 registry，消除重复声明：
 
-- `_KEY_NAME_TO_CRED_SLOT`：从 registry keys 生成
-- `_MODEL_PREFIX_TO_PROVIDER`：从 registry 的 model 前缀推导
-- `_PROVIDER_NAME_TO_KEY`：从 registry 的 name/display_name 生成
+- `_KEY_NAME_TO_CRED_SLOT`：从 registry keys 生成（`{key: key for key in PROVIDER_REGISTRY}`）
+- `_PROVIDER_NAME_TO_KEY`：从 registry 的 name 生成
 - `_PROVIDER_CANONICAL_NAMES`：从 registry 的 name 生成
 
-新增的模型前缀映射（Phase 2 完成后的完整列表）：
+**`_MODEL_PREFIX_TO_PROVIDER`** 保持为手写元组（无法从 model 列表自动推导，因为同一前缀可能对应多个 provider，且有 CN/Intl 的歧义需要人工指定默认值）。Phase 2 完成后的完整列表：
 
 ```python
 _MODEL_PREFIX_TO_PROVIDER = (
@@ -132,6 +168,8 @@ _MODEL_PREFIX_TO_PROVIDER = (
     ("doubao-", "volcengine_cn"),
 )
 ```
+
+注意：模型前缀匹配仅作为 fallback（当用户未通过 /auth 设置 activeProvider 时）。正常流程中 `_detect_provider_name` 优先使用 settings.yml 中的 `activeProvider`。
 
 #### 1.4 auth.py PROVIDERS 列表
 
@@ -358,8 +396,6 @@ ProviderDescriptor(
         ModelEntry("deepseek-v4-flash"),
         ModelEntry("glm-5.1"),
     ],
-    supports_stream_options=True,
-    cache_strategy=CacheStrategy.EXPLICIT,
     qwenpaw_provider_ids=["dashscope"],
 )
 ```
@@ -380,8 +416,6 @@ ProviderDescriptor(
         ModelEntry("MiniMax-M2.5"),
         ModelEntry("kimi-k2.5"),
     ],
-    supports_stream_options=True,
-    cache_strategy=CacheStrategy.EXPLICIT,
     qwenpaw_provider_ids=["aliyun-tokenplan"],
 )
 ```
@@ -404,7 +438,6 @@ ProviderDescriptor(
         ModelEntry("o3"),
         ModelEntry("o4-mini"),
     ],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["openai"],
 )
 ```
@@ -425,7 +458,6 @@ ProviderDescriptor(
         ModelEntry("claude-sonnet-4-6-1m"),
         ModelEntry("claude-haiku-4-5-20251001"),
     ],
-    cache_strategy=CacheStrategy.PASSTHROUGH,  # Phase 1: passthrough; Phase 2 升级为 EXPLICIT
     qwenpaw_provider_ids=["anthropic"],
     qwenpaw_chat_model="AnthropicChatModel",
 )
@@ -444,8 +476,6 @@ ProviderDescriptor(
         ModelEntry("deepseek-v4-pro", is_default=True),
         ModelEntry("deepseek-v4-flash"),
     ],
-    supports_stream_options=True,
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["deepseek"],
 )
 ```
@@ -460,7 +490,6 @@ ProviderDescriptor(
     provider_class="iac_code.providers.openai_provider.OpenAIProvider",
     base_url=None,
     models=[],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
 )
 ```
 
@@ -490,7 +519,11 @@ ProviderDescriptor(
 |------|----------|------|
 | `src/iac_code/providers/registry.py` | **新增** | ProviderDescriptor + PROVIDER_REGISTRY + 现有 6 provider 注册 |
 | `src/iac_code/services/qwenpaw_source.py` | **新增** | QwenPaw 配置读取、解密、映射 |
-| `src/iac_code/providers/manager.py` | 重构 | create_provider 改为注册表驱动；新增 base_url/provider_key_override 参数 |
+| `src/iac_code/providers/manager.py` | 重构 | create_provider 改为注册表驱动；新增 base_url/provider_key_override 参数；更新 MODEL_FALLBACK_MAP |
+| `src/iac_code/providers/openai_provider.py` | 修改 | `__init__` 新增 `provider_key` 参数 |
+| `src/iac_code/providers/deepseek_provider.py` | 修改 | `__init__` 新增 `base_url` 和 `provider_key` 参数，不再硬编码 URL |
+| `src/iac_code/providers/anthropic_provider.py` | 修改 | `__init__` 新增 `provider_key` 参数 |
+| `src/iac_code/providers/dashscope_provider.py` | 无需修改 | 已支持 `provider_key` 和 `base_url` |
 | `src/iac_code/config.py` | 修改 | 映射表从 registry 派生；新增 get_llm_source()；load_credentials 增加 qwenpaw 分支 |
 | `src/iac_code/commands/auth.py` | 修改 | PROVIDERS 列表从 registry 派生；qwenpaw 模式下屏蔽 LLM 配置 |
 | `src/iac_code/commands/model.py` | 修改 | qwenpaw 模式下提示去 QwenPaw |
@@ -525,7 +558,6 @@ ProviderDescriptor(
         ModelEntry("gemini-2.5-flash-lite"),
         ModelEntry("gemini-2.0-flash"),
     ],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["gemini"],
     qwenpaw_chat_model="GeminiChatModel",
 )
@@ -553,7 +585,6 @@ ProviderDescriptor(
         ModelEntry("kimi-k2.6", is_default=True),
         ModelEntry("kimi-k2.5"),
     ],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["kimi-cn"],
 )
 ```
@@ -573,7 +604,6 @@ ProviderDescriptor(
         ModelEntry("kimi-k2.6", is_default=True),
         ModelEntry("kimi-k2.5"),
     ],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["kimi-intl"],
 )
 ```
@@ -593,7 +623,6 @@ ProviderDescriptor(
         ModelEntry("MiniMax-M2.5", is_default=True),
         ModelEntry("MiniMax-M2.7"),
     ],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["minimax-cn"],
     qwenpaw_chat_model="AnthropicChatModel",
 )
@@ -612,7 +641,6 @@ ProviderDescriptor(
         ModelEntry("MiniMax-M2.5", is_default=True),
         ModelEntry("MiniMax-M2.7"),
     ],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["minimax"],
     qwenpaw_chat_model="AnthropicChatModel",
 )
@@ -632,7 +660,6 @@ ProviderDescriptor(
         ModelEntry("glm-5"),
         ModelEntry("glm-5-turbo"),
     ],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["zhipu-cn"],
 )
 ```
@@ -651,7 +678,6 @@ ProviderDescriptor(
         ModelEntry("glm-5"),
         ModelEntry("glm-5-turbo"),
     ],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["zhipu-intl"],
 )
 ```
@@ -670,7 +696,6 @@ ProviderDescriptor(
         ModelEntry("doubao-seed-2-0-pro-260215"),
         ModelEntry("doubao-seed-2-0-lite-260428"),
     ],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["volcengine-cn"],
 )
 ```
@@ -685,7 +710,6 @@ ProviderDescriptor(
     provider_class="iac_code.providers.siliconflow_provider.SiliconFlowProvider",
     base_url="https://api.siliconflow.cn/v1",
     models=[],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["siliconflow-cn"],
 )
 ```
@@ -700,7 +724,6 @@ ProviderDescriptor(
     provider_class="iac_code.providers.siliconflow_provider.SiliconFlowProvider",
     base_url="https://api.siliconflow.com/v1",
     models=[],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["siliconflow-intl"],
 )
 ```
@@ -717,7 +740,6 @@ ProviderDescriptor(
     models=[],
     require_api_key=False,
     is_local=True,
-    cache_strategy=CacheStrategy.NONE,
     qwenpaw_provider_ids=["ollama"],
 )
 ```
@@ -736,7 +758,6 @@ ProviderDescriptor(
     models=[],
     require_api_key=False,
     is_local=True,
-    cache_strategy=CacheStrategy.NONE,
     qwenpaw_provider_ids=["lmstudio"],
 )
 ```
@@ -751,7 +772,6 @@ ProviderDescriptor(
     provider_class="iac_code.providers.openrouter_provider.OpenRouterProvider",
     base_url="https://openrouter.ai/api/v1",
     models=[],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["openrouter"],
 )
 ```
@@ -773,7 +793,6 @@ ProviderDescriptor(
         ModelEntry("gpt-4.1"),
         ModelEntry("gpt-4o"),
     ],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["azure-openai"],
 )
 ```
@@ -790,7 +809,6 @@ ProviderDescriptor(
     models=[
         ModelEntry("Qwen/Qwen3.5-122B-A10B", is_default=True),
     ],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["modelscope"],
 )
 ```
@@ -811,8 +829,6 @@ ProviderDescriptor(
         ModelEntry("MiniMax-M2.5"),
         ModelEntry("kimi-k2.5"),
     ],
-    supports_stream_options=True,
-    cache_strategy=CacheStrategy.EXPLICIT,
     qwenpaw_provider_ids=["aliyun-codingplan"],
 )
 ```
@@ -833,8 +849,6 @@ ProviderDescriptor(
         ModelEntry("MiniMax-M2.5"),
         ModelEntry("kimi-k2.5"),
     ],
-    supports_stream_options=True,
-    cache_strategy=CacheStrategy.EXPLICIT,
     qwenpaw_provider_ids=["aliyun-codingplan-intl"],
 )
 ```
@@ -852,7 +866,6 @@ ProviderDescriptor(
         ModelEntry("glm-5.1", is_default=True),
         ModelEntry("glm-5"),
     ],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["zhipu-cn-codingplan"],
 )
 ```
@@ -870,7 +883,6 @@ ProviderDescriptor(
         ModelEntry("glm-5.1", is_default=True),
         ModelEntry("glm-5"),
     ],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["zhipu-intl-codingplan"],
 )
 ```
@@ -889,7 +901,6 @@ ProviderDescriptor(
         ModelEntry("doubao-seed-2-0-pro-260215"),
         ModelEntry("doubao-seed-2-0-lite-260428"),
     ],
-    cache_strategy=CacheStrategy.PASSTHROUGH,
     qwenpaw_provider_ids=["volcengine-cn-codingplan"],
 )
 ```
@@ -898,12 +909,13 @@ ProviderDescriptor(
 
 ### 6. Prompt Cache 策略
 
-#### 6.1 Explicit Cache（主动插入 cache_control 标记）
+缓存策略是 **provider class 内部逻辑**，不在 ProviderDescriptor 中声明。各 provider class 自行决定是否以及如何使用缓存。
 
-适用于：`dashscope`、`dashscope_token_plan`、`aliyun_codingplan`、`aliyun_codingplan_intl`、`anthropic`
+#### 6.1 主动缓存（provider class 内部按模型决定）
 
-**DashScope 系列**（已有实现）：
-在 `_build_api_messages` 中对 system prompt 的静态部分和最后一条 user message 插入 `cache_control: {type: ephemeral}`。支持的模型前缀：
+**DashScope 系列**（已有实现，无需修改）：
+
+`DashScopeProvider._supports_explicit_cache()` 按模型前缀判断是否插入 `cache_control` 标记：
 
 ```python
 _EXPLICIT_CACHE_MODEL_PREFIXES = (
@@ -914,8 +926,15 @@ _EXPLICIT_CACHE_MODEL_PREFIXES = (
 )
 ```
 
+同一个 DashScope provider 下：
+- `qwen3.6-plus` → 命中前缀 → 插入 system + last-user cache_control 标记
+- `deepseek-v4-pro` → 不命中 → 不插入标记，走 passthrough
+
+此逻辑对 `dashscope`、`dashscope_token_plan`、`aliyun_codingplan`、`aliyun_codingplan_intl` 均生效（它们共享 `DashScopeProvider` class）。
+
 **Anthropic**（Phase 2 新增）：
-在 `AnthropicProvider._build_kwargs` 中对 system prompt 插入 cache breakpoint：
+
+Anthropic API 的 cache_control 是 API 级别特性，所有模型都支持。在 `AnthropicProvider._build_kwargs` 中新增主动标记：
 
 ```python
 def _build_system_with_cache(self, system: str) -> list[dict]:
@@ -928,24 +947,24 @@ def _build_system_with_cache(self, system: str) -> list[dict]:
     return blocks
 ```
 
-同时对最后一条 user message 也标记 cache_control（复用 DashScope 的 `_mark_last_user_message_cacheable` 逻辑，提取为共享工具函数）。
+同时对最后一条 user message 也标记 cache_control。将 DashScope 的 `_mark_last_user_message_cacheable` 提取为共享工具函数供两者复用。
 
-#### 6.2 Passthrough（被动获取缓存统计）
+#### 6.2 被动统计（所有 provider 通用）
 
-适用于：`openai`、`deepseek`、`gemini`、所有 OpenAI 兼容 provider
+所有 provider 都从 API 响应中读取缓存统计信息：
 
-通过 API 响应中的 usage 字段获取缓存信息：
-- OpenAI/DeepSeek：`usage.prompt_tokens_details.cached_tokens`
-- Gemini：`usage_metadata.cached_content_token_count`
-- 其他 OpenAI 兼容：同 OpenAI 格式（有则读，无则为 0）
+| Provider 类型 | 缓存字段来源 |
+|---|---|
+| OpenAI 兼容（OpenAI/DeepSeek/Kimi/ZhiPu/...） | `usage.prompt_tokens_details.cached_tokens` + `cache_creation_input_tokens` |
+| Anthropic 兼容（Anthropic/MiniMax） | `usage.cache_creation_input_tokens` + `cache_read_input_tokens` |
+| Gemini | `usage_metadata.cached_content_token_count` |
+| 本地（Ollama/LM Studio） | 仅 `input_tokens` + `output_tokens`（无缓存字段） |
 
-确保所有支持的 provider 都设置 `supports_stream_options = True` 以获取 streaming 模式下的 usage。
-
-#### 6.3 None（无缓存支持）
-
-适用于：`ollama`、`lmstudio`
-
-Usage 统计仅包含 `input_tokens` + `output_tokens`。
+**关于 `supports_stream_options`**：这是 provider class 的 class attribute，控制是否在 streaming 请求中附加 `stream_options={"include_usage": True}`。各 provider class 自行声明：
+- `DashScopeProvider.supports_stream_options = True`
+- `DeepSeekProvider.supports_stream_options = True`
+- `OpenAIProvider.supports_stream_options = False`（基类默认，OpenAI 自动返回 usage）
+- 新 provider 子类继承自 `OpenAIProvider`，按需覆盖
 
 ---
 
