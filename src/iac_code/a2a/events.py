@@ -224,6 +224,7 @@ async def publish_stream_event(
                     "tool": {
                         "status": "input_complete",
                         "toolUseId": event.tool_use_id,
+                        "name": event.name,
                         "input": _truncate(event.input),
                     }
                 }

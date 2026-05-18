@@ -202,6 +202,7 @@ async def test_tool_events_publish_metadata_updates() -> None:
     assert dumped[0]["metadata"]["iac_code"]["tool"]["status"] == "started"
     assert dumped[1]["metadata"]["iac_code"]["tool"]["status"] == "input_delta"
     assert dumped[2]["metadata"]["iac_code"]["tool"]["status"] == "input_complete"
+    assert dumped[2]["metadata"]["iac_code"]["tool"]["name"] == "bash"
     assert dumped[3]["metadata"]["iac_code"]["tool"]["status"] == "completed"
 
 
