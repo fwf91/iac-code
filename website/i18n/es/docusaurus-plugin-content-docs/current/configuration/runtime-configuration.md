@@ -1,19 +1,19 @@
 ---
-title: Configuracion
-description: Orden de configuracion en tiempo de ejecucion y archivos locales.
+title: Configuración
+description: Orden de configuración en tiempo de ejecución y archivos locales.
 ---
 
-# Configuracion
+# Configuración
 
-IaC Code lee la configuracion desde los argumentos del CLI, las variables de entorno y los archivos en el directorio de configuracion en tiempo de ejecucion.
+IaC Code lee la configuración desde argumentos CLI, variables de entorno y archivos en el directorio de configuración en tiempo de ejecución.
 
-Precedencia de configuracion:
+Precedencia de configuración:
 
 ```text
-CLI arguments > environment variables > configuration files
+Argumentos CLI > variables de entorno > archivos de configuración
 ```
 
-El directorio de tiempo de ejecucion es:
+El directorio de tiempo de ejecución es:
 
 ```text
 ~/.iac-code/
@@ -21,11 +21,61 @@ El directorio de tiempo de ejecucion es:
 
 Archivos comunes:
 
-| Archivo | Descripcion |
+| Archivo | Descripción |
 |---|---|
 | `.credentials.yml` | Credenciales de LLM |
 | `.cloud-credentials.yml` | Credenciales del proveedor de nube |
 | `settings.yml` | Proveedor seleccionado, modelo y configuraciones relacionadas |
-| archivos de historial | Historial de entrada para flujos de trabajo interactivos |
+| history files | Historial de entrada para flujos de trabajo interactivos |
 
-Evita hacer commit o compartir archivos de este directorio porque pueden contener secretos o preferencias locales.
+Evite hacer commit o compartir archivos de este directorio porque pueden contener secretos o preferencias locales.
+
+## Configuración del proyecto
+
+Además del archivo `~/.iac-code/settings.yml` a nivel de usuario, IaC Code carga configuraciones a nivel de proyecto desde el directorio de trabajo actual:
+
+| Archivo | Alcance |
+|---|---|
+| `.iac-code/settings.yml` | Configuración compartida del proyecto (segura para hacer commit). |
+| `.iac-code/settings.local.yml` | Anulaciones locales (debe estar en .gitignore). |
+
+Orden de fusión: **configuración de usuario → configuración del proyecto → configuración local del proyecto → argumentos CLI** (las fuentes posteriores anulan las anteriores).
+
+## Configuración de permisos de herramientas
+
+La sección `permissions` en `settings.yml` configura qué acciones de herramientas se permiten, deniegan o requieren confirmación:
+
+```yaml
+permissions:
+  mode: default
+  allow:
+    - "bash(git *)"
+    - "bash(ls:*)"
+  deny:
+    - "bash(rm -rf *)"
+  ask:
+    - "bash(curl:*)"
+  additional_directories:
+    - "/tmp/workspace"
+```
+
+| Campo | Descripción |
+|---|---|
+| `mode` | Modo de permisos: `default`, `accept_edits`, `bypass_permissions`, `dont_ask`. |
+| `allow` | Lista de patrones de permisos de herramientas para aprobar automáticamente. |
+| `deny` | Lista de patrones de permisos de herramientas para denegar automáticamente. |
+| `ask` | Lista de patrones de permisos de herramientas que siempre requieren confirmación. |
+| `additional_directories` | Directorios adicionales más allá de cwd en los que el agente puede escribir. |
+
+### Sintaxis de patrones
+
+Los patrones de permisos de herramientas siguen el formato `tool_name(rule)`:
+
+| Patrón | Significado |
+|---|---|
+| `bash` | Coincidir con todos los comandos bash (nombre de herramienta simple). |
+| `bash(git *)` | Coincidir con comandos bash que comienzan con `git`. |
+| `bash(curl:*)` | Coincidir con comandos bash que comienzan con `curl`. |
+| `write_file` | Coincidir con todas las llamadas a la herramienta write_file. |
+
+Las reglas se evalúan en orden: **deny → ask → allow → comportamiento predeterminado**. Los argumentos CLI (`--allowed-tools`, `--disallowed-tools`) tienen la mayor precedencia.

@@ -39,4 +39,21 @@ iac-code --prompt "创建一个 VPC" --max-turns 20
 | `json` | 返回单个 JSON 结果，适合调用方解析最终响应。 |
 | `stream-json` | 输出流式 JSON 事件，适合调用方处理增量进度。 |
 
+## 自动化中的权限控制
+
+在非交互模式下运行时，使用 `--permission-mode` 控制代理处理工具审批的方式：
+
+```bash
+iac-code --prompt "部署资源栈" --permission-mode bypass_permissions
+```
+
+要限制代理的操作范围，可以组合使用 `--allowed-tools` 和 `--disallowed-tools`：
+
+```bash
+iac-code --prompt "检查资源栈状态" \
+  --allowed-tools 'bash(git *),bash(ls:*)' \
+  --disallowed-tools 'bash(rm *)' \
+  --permission-mode dont_ask
+```
+
 完整启动参数请参见[命令行选项](../cli/command-line-options.md)。

@@ -30,11 +30,18 @@ async def run_sub_agent(
     parent_tool_registry: Any = None,
     parent_system_prompt: str = "",
     event_queue: asyncio.Queue | None = None,
+    permission_context: Any = None,
 ) -> tuple[str, AgentProgress]:
     """Run a sub-agent and return (final_text, progress)."""
     from iac_code.agent.agent_loop import AgentLoop
     from iac_code.agent.system_prompt import build_system_prompt
-    from iac_code.types.stream_events import TextDeltaEvent, ToolResultEvent, ToolUseEndEvent, ToolUseStartEvent
+    from iac_code.types.stream_events import (
+        PermissionRequestEvent,
+        TextDeltaEvent,
+        ToolResultEvent,
+        ToolUseEndEvent,
+        ToolUseStartEvent,
+    )
 
     defn = get_agent_definition(agent_type)
     if defn is None:
@@ -48,6 +55,7 @@ async def run_sub_agent(
         system_prompt=system_prompt,
         tool_registry=sub_registry or parent_tool_registry,
         max_turns=defn.max_turns,
+        permission_context=permission_context,
     )
 
     progress = AgentProgress(summary=f"Running {agent_type} agent")
@@ -56,6 +64,10 @@ async def run_sub_agent(
     pending_tool_inputs: dict[str, tuple[str, dict]] = {}
 
     async for event in sub_loop.run_streaming(prompt):
+        if isinstance(event, PermissionRequestEvent):
+            if event.response_future is not None and not event.response_future.done():
+                event.response_future.set_result(False)
+            continue
         if isinstance(event, TextDeltaEvent):
             text_chunks.append(event.text)
         elif isinstance(event, ToolUseStartEvent):
@@ -108,12 +120,14 @@ class AgentTool(Tool):
         provider_manager: Any = None,
         tool_registry: Any = None,
         system_prompt: str = "",
+        permission_context: Any = None,
     ):
         self._task_manager = task_manager
         self._notification_queue = notification_queue
         self._provider_manager = provider_manager
         self._tool_registry = tool_registry
         self._system_prompt = system_prompt
+        self._permission_context = permission_context
         self._event_queue: asyncio.Queue | None = None  # Set by ToolExecutor via ToolCallRequest
 
     @property
@@ -179,6 +193,7 @@ class AgentTool(Tool):
                 parent_tool_registry=self._tool_registry,
                 parent_system_prompt=self._system_prompt,
                 event_queue=self._event_queue,
+                permission_context=self._permission_context,
             )
             if self._event_queue:
                 await self._event_queue.put(None)
@@ -205,6 +220,7 @@ class AgentTool(Tool):
                 parent_provider_manager=self._provider_manager,
                 parent_tool_registry=self._tool_registry,
                 parent_system_prompt=self._system_prompt,
+                permission_context=self._permission_context,
             )
             self._task_manager.complete(task_id, result=result_text)
             self._task_manager.update_progress(

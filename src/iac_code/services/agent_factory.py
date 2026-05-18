@@ -12,6 +12,9 @@ class AgentFactoryOptions:
     session_id: str | None = None
     cwd: str | None = None
     max_turns: int = 100
+    cli_allowed_tools: list[str] | None = None
+    cli_disallowed_tools: list[str] | None = None
+    cli_permission_mode: str | None = None
 
 
 @dataclass
@@ -138,6 +141,20 @@ def create_agent_runtime(options: AgentFactoryOptions) -> AgentRuntime:
         )
     )
 
+    from iac_code.services.permissions.loader import load_permission_context
+
+    permission_context = load_permission_context(
+        cwd,
+        cli_allowed=options.cli_allowed_tools,
+        cli_disallowed=options.cli_disallowed_tools,
+        cli_mode=options.cli_permission_mode,
+    )
+
+    if hasattr(tool_registry, "get"):
+        agent_tool = tool_registry.get("agent")
+        if agent_tool is not None and hasattr(agent_tool, "_permission_context"):
+            setattr(agent_tool, "_permission_context", permission_context)
+
     skill_listing = build_skill_listing(command_registry.get_model_invocable_skills())
     agent_loop = AgentLoop(
         provider_manager=provider_manager,
@@ -147,6 +164,7 @@ def create_agent_runtime(options: AgentFactoryOptions) -> AgentRuntime:
         session_id=session_id,
         max_turns=options.max_turns,
         cwd=cwd,
+        permission_context=permission_context,
     )
 
     return AgentRuntime(

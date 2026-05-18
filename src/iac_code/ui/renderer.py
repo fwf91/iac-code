@@ -1285,21 +1285,41 @@ class Renderer:
             line.append(f" ({detail})")
         self.console.print(line)
 
-        # Arrow-key selector aligned with ACP's four PermissionOption kinds.
+        # Arrow-key selector with smart rule suggestions from permission engine.
         self.console.print(Text(_("Allow this action?"), style="bold"))
 
         options: list[OptionType] = [
             TextOption(label=_("Yes, allow once"), value="allow_once"),
-            TextOption(label=_("Yes, allow always for this tool"), value="always_allow"),
-            TextOption(label=_("No, reject once"), value="reject_once", description="({})".format(_("default"))),
-            TextOption(label=_("No, always reject this tool"), value="always_deny"),
         ]
+
+        has_suggestion = (
+            event.permission_result is not None
+            and hasattr(event.permission_result, "suggestions")
+            and event.permission_result.suggestions
+        )
+        if has_suggestion:
+            sug = event.permission_result.suggestions[0]
+            options.append(
+                TextOption(
+                    label=_('Yes, always allow "{rule}" (this session)').format(rule=sug.rule_content),
+                    value="always_allow_rule",
+                )
+            )
+        else:
+            options.append(TextOption(label=_("Yes, allow always for this tool"), value="always_allow"))
+
+        options.extend(
+            [
+                TextOption(label=_("No, reject once"), value="reject_once", description="({})".format(_("default"))),
+                TextOption(label=_("No, always reject this tool"), value="always_deny"),
+            ]
+        )
 
         select = Select(
             options=options,
             default_value="reject_once",
             layout=SelectLayout.EXPANDED,
-            visible_count=4,
+            visible_count=len(options),
         )
 
         loop = asyncio.get_event_loop()
@@ -1312,6 +1332,18 @@ class Renderer:
             return True
         if result == "always_allow":
             record_permission(cache, tool_name, "always_allow")
+            return True
+        if result == "always_allow_rule":
+            if has_suggestion and self._app_state_store is not None:
+                perm_ctx = self._app_state_store.get_state().permission_context
+                if perm_ctx is not None:
+                    import dataclasses
+
+                    from iac_code.services.permissions.storage import apply_session_rule
+
+                    sug = event.permission_result.suggestions[0]
+                    new_ctx = apply_session_rule(perm_ctx, "allow", sug)
+                    self._app_state_store.set_state(lambda s: dataclasses.replace(s, permission_context=new_ctx))
             return True
         if result == "always_deny":
             record_permission(cache, tool_name, "always_deny")

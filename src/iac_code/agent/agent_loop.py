@@ -13,6 +13,7 @@ from typing import Any, Literal
 from loguru import logger
 
 from iac_code.agent.message import TextBlock, ThinkingBlock, ToolResultBlock, ToolUseBlock
+from iac_code.i18n import _
 from iac_code.services.context_manager import ContextManager
 from iac_code.tools.base import ToolContext, ToolRegistry, ToolResult
 from iac_code.tools.result_storage import ResultStorage
@@ -66,6 +67,8 @@ class AgentLoop:
         session_id: str | None = None,
         resume_messages: list | None = None,
         cwd: str | None = None,
+        permission_context: Any = None,  # ToolPermissionContext
+        permission_context_getter: Any = None,  # Callable[[], ToolPermissionContext | None]
     ) -> None:
         self._provider_manager = provider_manager
         self.system_prompt = system_prompt
@@ -74,6 +77,8 @@ class AgentLoop:
         self._session_storage = session_storage
         self._session_id = session_id or str(uuid.uuid4())[:8]
         self._cwd = cwd or os.getcwd()
+        self._permission_context = permission_context
+        self._permission_context_getter = permission_context_getter
         self._current_git_branch: str | None = None
 
         model_name = ""
@@ -364,12 +369,25 @@ class AgentLoop:
                         allowed_requests.append(request)
                         continue
 
-                    permission = await tool.check_permissions(request.input, {"cwd": context.cwd})
+                    perm_ctx = None
+                    if self._permission_context_getter is not None:
+                        perm_ctx = self._permission_context_getter()
+                    if perm_ctx is None:
+                        perm_ctx = self._permission_context
+
+                    if perm_ctx is not None:
+                        from iac_code.services.permissions.pipeline import check_tool_permission
+
+                        permission = await check_tool_permission(tool, request.input, perm_ctx)
+                    else:
+                        permission = await tool.check_permissions(request.input, {"cwd": context.cwd})
+
                     if permission.behavior == "allow":
                         allowed_requests.append(request)
                         continue
                     if permission.behavior == "deny":
-                        denied_results.append((request, ToolResult.error(permission.message or "Permission denied.")))
+                        msg = permission.message or _("Permission denied.")
+                        denied_results.append((request, ToolResult.error(msg)))
                         continue
 
                     response_future: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
@@ -378,11 +396,12 @@ class AgentLoop:
                         tool_input=request.input,
                         tool_use_id=request.id,
                         response_future=response_future,
+                        permission_result=permission,
                     )
                     if await response_future:
                         allowed_requests.append(request)
                     else:
-                        denied_results.append((request, ToolResult.error("Permission denied.")))
+                        denied_results.append((request, ToolResult.error(_("Permission denied."))))
 
                 for request, result in denied_results:
                     yield ToolResultEvent(

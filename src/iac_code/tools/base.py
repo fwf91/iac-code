@@ -9,6 +9,8 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+from iac_code.i18n import _
+
 if TYPE_CHECKING:
     from iac_code.types.permissions import PermissionResult
 
@@ -174,13 +176,13 @@ class Tool(ABC):
         """Whether the tool performs destructive operations."""
         return False
 
-    async def check_permissions(self, input: dict, context: dict | None = None) -> "PermissionResult":
+    async def check_permissions(self, input: dict, context=None) -> "PermissionResult":
         """Check permissions"""
         from iac_code.types.permissions import PermissionResult
 
         if self.is_read_only(input):
             return PermissionResult(behavior="allow")
-        return PermissionResult(behavior="ask", message=f"Allow {self.user_facing_name(input)}?")
+        return PermissionResult(behavior="ask", message=_("Allow {}?").format(self.user_facing_name(input)))
 
 
 class ToolRegistry:

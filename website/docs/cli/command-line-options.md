@@ -18,6 +18,20 @@ Command line options change how IaC Code starts. Use them before entering the in
 | `-d`, `--debug` | Enable debug logging for the current run. In interactive mode, use `/debug` to inspect or change debug logging after startup. |
 | `-r <session-id>`, `--resume <session-id>` | Resume a previous session by ID. This is for returning to a known conversation. |
 | `-c`, `--continue` | Resume the most recent session. This cannot be used together with `--resume`. |
+| `--allowed-tools <patterns>` | Comma-separated tool permission patterns to allow, e.g. `'bash(git *),write_file'`. |
+| `--disallowed-tools <patterns>` | Comma-separated tool permission patterns to deny, e.g. `'bash(rm *)'`. |
+| `--permission-mode <mode>` | Permission mode: `default`, `accept_edits`, `bypass_permissions`, `dont_ask`. |
+
+## Permission Modes
+
+The `--permission-mode` flag controls how the agent handles tool permission checks:
+
+| Mode | Behavior |
+|---|---|
+| `default` | The agent prompts for confirmation when a tool action requires approval. |
+| `accept_edits` | Auto-approve file system commands that are considered edits (e.g. `mkdir`, `cp`). Other actions still prompt. |
+| `bypass_permissions` | Auto-approve all tool actions except safety checks. Intended for trusted automation. |
+| `dont_ask` | Silently deny any action that would normally prompt. Useful for strict read-only runs. |
 
 ## Common Startup Commands
 
@@ -49,4 +63,16 @@ Resume the latest session:
 
 ```bash
 iac-code --continue
+```
+
+Allow only git and read-only bash commands:
+
+```bash
+iac-code --allowed-tools 'bash(git *)'
+```
+
+Run in automation with no interactive prompts:
+
+```bash
+iac-code --prompt "Create a VPC" --permission-mode bypass_permissions
 ```

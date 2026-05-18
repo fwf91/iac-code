@@ -39,4 +39,21 @@ Supported output formats are:
 | `json` | A single JSON result for callers that parse the final response. |
 | `stream-json` | Streaming JSON events for callers that process incremental progress. |
 
+## Permission Control in Automation
+
+When running non-interactively, use `--permission-mode` to control how the agent handles tool approvals:
+
+```bash
+iac-code --prompt "Deploy the stack" --permission-mode bypass_permissions
+```
+
+To restrict what the agent can do, combine `--allowed-tools` and `--disallowed-tools`:
+
+```bash
+iac-code --prompt "Check the stack status" \
+  --allowed-tools 'bash(git *),bash(ls:*)' \
+  --disallowed-tools 'bash(rm *)' \
+  --permission-mode dont_ask
+```
+
 For all startup flags, see [Command Line Options](../cli/command-line-options.md).
