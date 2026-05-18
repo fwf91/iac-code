@@ -1,8 +1,17 @@
-# iac-code
-
-**Language**: [English](../README.md) | [中文](README.zh.md) | Español | [Français](README.fr.md) | [Deutsch](README.de.md) | [日本語](README.ja.md) | [Português](README.pt.md)
-
-Asistente de Infraestructura como Código (IaC) impulsado por IA que genera y gestiona plantillas de orquestación de recursos de Alibaba Cloud (ROS / Terraform) mediante interacción en lenguaje natural.
+<p align="center">
+  <img src="../website/static/img/logo-with-front.png" alt="iac-code" width="200">
+</p>
+<p align="center">
+  <em>Asistente de Infraestructura como Código (IaC) impulsado por IA que genera y gestiona plantillas de orquestación de recursos de Alibaba Cloud (ROS / Terraform) mediante interacción en lenguaje natural.</em>
+</p>
+<p align="center">
+  <a href="https://github.com/aliyun/iac-code/actions/workflows/test.yml"><img src="https://github.com/aliyun/iac-code/actions/workflows/test.yml/badge.svg" alt="Test"></a>
+  <a href="https://pypi.org/project/iac-code"><img src="https://img.shields.io/pypi/v/iac-code?color=%2334D058&label=pypi%20package" alt="PyPI Package"></a>
+  <a href="https://pypi.org/project/iac-code"><img src="https://img.shields.io/pypi/pyversions/iac-code?color=%2334D058&label=python" alt="Python"></a>
+</p>
+<p align="center">
+  <strong>Language</strong>: <a href="../README.md">English</a> | <a href="README.zh.md">中文</a> | Español | <a href="README.fr.md">Français</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ja.md">日本語</a> | <a href="README.pt.md">Português</a>
+</p>
 
 > **Documentación**: [https://aliyun.github.io/iac-code/](https://aliyun.github.io/iac-code/es/)
 

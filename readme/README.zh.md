@@ -1,8 +1,17 @@
-# iac-code
-
-**Language**: [English](../README.md) | 中文 | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [日本語](README.ja.md) | [Português](README.pt.md)
-
-AI 驱动的基础设施即代码（IaC）助手，通过自然语言交互生成和管理阿里云基础设施资源编排模板（ROS / Terraform）。
+<p align="center">
+  <img src="../website/static/img/logo-with-front.png" alt="iac-code" width="200">
+</p>
+<p align="center">
+  <em>AI 驱动的基础设施即代码助手，通过自然语言交互生成和管理阿里云资源编排模板（ROS / Terraform）。</em>
+</p>
+<p align="center">
+  <a href="https://github.com/aliyun/iac-code/actions/workflows/test.yml"><img src="https://github.com/aliyun/iac-code/actions/workflows/test.yml/badge.svg" alt="Test"></a>
+  <a href="https://pypi.org/project/iac-code"><img src="https://img.shields.io/pypi/v/iac-code?color=%2334D058&label=pypi%20package" alt="PyPI Package"></a>
+  <a href="https://pypi.org/project/iac-code"><img src="https://img.shields.io/pypi/pyversions/iac-code?color=%2334D058&label=python" alt="Python"></a>
+</p>
+<p align="center">
+  <strong>Language</strong>: <a href="../README.md">English</a> | 中文 | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ja.md">日本語</a> | <a href="README.pt.md">Português</a>
+</p>
 
 > **文档**：[https://aliyun.github.io/iac-code/](https://aliyun.github.io/iac-code/zh-Hans/)
 
