@@ -63,6 +63,7 @@ class AppState:
     messages: list = field(default_factory=list)  # list[Message]
     is_busy: bool = False
     always_allow_rules: OrderedDict[str, PermissionDecision] = field(default_factory=OrderedDict)
+    permission_context: Any = None  # ToolPermissionContext (avoid circular import)
     spinner_text: str = ""
     context_usage_percent: float = 0.0
     effort_level: Any | None = None  # EffortLevel enum or None (avoid circular import)

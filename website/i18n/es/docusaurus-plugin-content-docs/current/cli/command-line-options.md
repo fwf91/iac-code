@@ -1,23 +1,37 @@
 ---
-title: Opciones de linea de comandos
-description: Referencia de las opciones de inicio de IaC Code y los indicadores de ejecucion de un solo uso.
+title: Opciones de línea de comandos
+description: Referencia para las opciones de inicio y ejecución única de IaC Code.
 ---
 
-# Opciones de linea de comandos
+# Opciones de línea de comandos
 
-Las opciones de linea de comandos cambian como se inicia IaC Code. Usalas antes de entrar al REPL interactivo, o combinalas con `--prompt` para automatizacion de un solo uso.
+Las opciones de línea de comandos cambian cómo se inicia IaC Code. Úselas antes de entrar en el REPL interactivo, o combínelas con `--prompt` para automatización única.
 
-| Opcion | Proposito |
+| Opción | Propósito |
 |---|---|
-| `-h`, `--help` | Muestra la ayuda del CLI y sale. Usalo para inspeccionar las opciones soportadas por tu version instalada. |
-| `-v`, `-V`, `--version` | Imprime la version instalada de IaC Code y sale. |
-| `-m <model>`, `--model <model>` | Inicia con un modelo LLM especifico. Esto sobreescribe el modelo guardado para la ejecucion actual. |
-| `-p <prompt>`, `--prompt <prompt>` | Ejecuta un solo prompt y sale. Esto habilita el modo no interactivo. Usa `--prompt -` para leer el prompt desde la entrada estandar. |
-| `--output-format <format>` | Establece el formato de salida para el modo no interactivo. Los valores soportados son `text`, `json` y `stream-json`. El valor predeterminado es `text`. |
-| `--max-turns <number>` | Limita el numero maximo de turnos del agente en modo no interactivo. El valor predeterminado es `100`. |
-| `-d`, `--debug` | Habilita el registro de depuracion para la ejecucion actual. En modo interactivo, usa `/debug` para inspeccionar o cambiar el registro de depuracion despues del inicio. |
-| `-r <session-id>`, `--resume <session-id>` | Reanuda una sesion anterior por ID. Esto es para volver a una conversacion conocida. |
-| `-c`, `--continue` | Reanuda la sesion mas reciente. No se puede usar junto con `--resume`. |
+| `-h`, `--help` | Mostrar la ayuda del CLI y salir. Use esto para inspeccionar las opciones soportadas por su versión instalada. |
+| `-v`, `-V`, `--version` | Imprimir la versión instalada de IaC Code y salir. |
+| `-m <model>`, `--model <model>` | Iniciar con un modelo LLM específico. Esto anula el modelo guardado para la ejecución actual. |
+| `-p <prompt>`, `--prompt <prompt>` | Ejecutar un único prompt y salir. Esto habilita el modo no interactivo. Use `--prompt -` para leer el prompt desde la entrada estándar. |
+| `--output-format <format>` | Establecer el formato de salida para el modo no interactivo. Los valores soportados son `text`, `json` y `stream-json`. El valor predeterminado es `text`. |
+| `--max-turns <number>` | Limitar el número máximo de turnos del agente en modo no interactivo. El valor predeterminado es `100`. |
+| `-d`, `--debug` | Habilitar el registro de depuración para la ejecución actual. En modo interactivo, use `/debug` para inspeccionar o cambiar el registro de depuración después del inicio. |
+| `-r <session-id>`, `--resume <session-id>` | Reanudar una sesión anterior por ID. Esto es para volver a una conversación conocida. |
+| `-c`, `--continue` | Reanudar la sesión más reciente. No se puede usar junto con `--resume`. |
+| `--allowed-tools <patterns>` | Patrones de permisos de herramientas separados por comas para permitir, ej. `'bash(git *),write_file'`. |
+| `--disallowed-tools <patterns>` | Patrones de permisos de herramientas separados por comas para denegar, ej. `'bash(rm *)'`. |
+| `--permission-mode <mode>` | Modo de permisos: `default`, `accept_edits`, `bypass_permissions`, `dont_ask`. |
+
+## Modos de permisos
+
+El parámetro `--permission-mode` controla cómo el agente maneja las comprobaciones de permisos de herramientas:
+
+| Modo | Comportamiento |
+|---|---|
+| `default` | El agente solicita confirmación cuando una acción de herramienta requiere aprobación. |
+| `accept_edits` | Aprobar automáticamente comandos del sistema de archivos considerados como ediciones (ej. `mkdir`, `cp`). Otras acciones aún solicitan confirmación. |
+| `bypass_permissions` | Aprobar automáticamente todas las acciones de herramientas excepto las comprobaciones de seguridad. Destinado para automatización confiable. |
+| `dont_ask` | Denegar silenciosamente cualquier acción que normalmente solicitaría confirmación. Útil para ejecuciones estrictamente de solo lectura. |
 
 ## Comandos de inicio comunes
 
@@ -27,26 +41,38 @@ Iniciar el REPL interactivo con el modelo guardado:
 iac-code
 ```
 
-Iniciar con un modelo especifico para esta ejecucion:
+Iniciar con un modelo específico para esta ejecución:
 
 ```bash
 iac-code --model qwen3.6-plus
 ```
 
-Ejecutar un prompt de un solo uso:
+Ejecutar un prompt único:
 
 ```bash
 iac-code --prompt "Create an OSS Bucket"
 ```
 
-Leer el prompt desde la entrada estandar:
+Leer el prompt desde la entrada estándar:
 
 ```bash
 echo "Create a VPC and two ECS instances" | iac-code --prompt -
 ```
 
-Reanudar la ultima sesion:
+Reanudar la sesión más reciente:
 
 ```bash
 iac-code --continue
+```
+
+Permitir solo comandos git y bash de solo lectura:
+
+```bash
+iac-code --allowed-tools 'bash(git *)'
+```
+
+Ejecutar en automatización sin prompts interactivos:
+
+```bash
+iac-code --prompt "Create a VPC" --permission-mode bypass_permissions
 ```

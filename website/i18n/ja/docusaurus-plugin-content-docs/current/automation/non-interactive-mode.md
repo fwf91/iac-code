@@ -1,11 +1,11 @@
 ---
 title: 非対話モード
-description: 引数または標準入力からワンショットプロンプトを実行。
+description: 引数または stdin からワンショットプロンプトを実行します。
 ---
 
 # 非対話モード
 
-非対話モードは単一のプロンプトを実行して終了します。REPL に留まらずに繰り返しタスクの出力を生成したい場合に使用します。
+非対話モードは単一のプロンプトを実行して終了します。REPL に留まらずに、繰り返し可能なタスクの出力を IaC Code に生成させたい場合に使用します。
 
 `--prompt` でプロンプトを直接渡します：
 
@@ -19,7 +19,7 @@ iac-code --prompt "Create an OSS Bucket"
 echo "Create a VPC and two ECS instances" | iac-code --prompt -
 ```
 
-呼び出し元が構造化出力を必要とする場合は `--output-format` を使用します：
+呼び出し元が構造化された出力を必要とする場合は `--output-format` を使用します：
 
 ```bash
 iac-code --prompt "Create an OSS Bucket" --output-format json
@@ -33,10 +33,27 @@ iac-code --prompt "Create a VPC" --max-turns 20
 
 サポートされる出力形式：
 
-| 形式 | 用途 |
+| 形式 | 目的 |
 |---|---|
 | `text` | 人間が読みやすい出力。デフォルトです。 |
-| `json` | 最終応答を解析する呼び出し元向けの単一 JSON 結果。 |
+| `json` | 最終レスポンスを解析する呼び出し元向けの単一 JSON 結果。 |
 | `stream-json` | 増分進捗を処理する呼び出し元向けのストリーミング JSON イベント。 |
 
-すべての起動フラグは[コマンドラインオプション](../cli/command-line-options.md)をご覧ください。
+## 自動化における権限制御
+
+非対話実行時に `--permission-mode` を使用して、エージェントのツール承認の処理方法を制御します：
+
+```bash
+iac-code --prompt "Deploy the stack" --permission-mode bypass_permissions
+```
+
+エージェントが実行できる内容を制限するには、`--allowed-tools` と `--disallowed-tools` を組み合わせます：
+
+```bash
+iac-code --prompt "Check the stack status" \
+  --allowed-tools 'bash(git *),bash(ls:*)' \
+  --disallowed-tools 'bash(rm *)' \
+  --permission-mode dont_ask
+```
+
+すべての起動パラメータは[コマンドラインオプション](../cli/command-line-options.md)を参照してください。

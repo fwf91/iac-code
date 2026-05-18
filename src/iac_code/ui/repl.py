@@ -75,7 +75,14 @@ class CommandContext:
 class InlineREPL:
     """Inline terminal REPL integrating all subsystems."""
 
-    def __init__(self, model: str, resume_session_id: str | bool | None = None) -> None:
+    def __init__(
+        self,
+        model: str,
+        resume_session_id: str | bool | None = None,
+        cli_allowed_tools: list[str] | None = None,
+        cli_disallowed_tools: list[str] | None = None,
+        cli_permission_mode: str | None = None,
+    ) -> None:
         self.console = Console()
         # Lock the working directory for the lifetime of this REPL. All session
         # storage and project-partitioning lookups go through this — agents can
@@ -179,6 +186,20 @@ class InlineREPL:
         skill_commands = self.command_registry.get_model_invocable_skills()
         self._skill_listing = build_skill_listing(skill_commands)
 
+        from iac_code.services.permissions.loader import load_permission_context
+
+        permission_context = load_permission_context(
+            self._original_cwd,
+            cli_allowed=cli_allowed_tools,
+            cli_disallowed=cli_disallowed_tools,
+            cli_mode=cli_permission_mode,
+        )
+        self.store.set_state(permission_context=permission_context)
+
+        agent_tool = self.tool_registry.get("agent")
+        if agent_tool is not None and hasattr(agent_tool, "_permission_context"):
+            setattr(agent_tool, "_permission_context", permission_context)
+
         self._agent_loop = AgentLoop(
             provider_manager=self._provider_manager,
             system_prompt=build_system_prompt(
@@ -189,6 +210,8 @@ class InlineREPL:
             session_id=self._session_id,
             resume_messages=self._resume_messages or None,
             cwd=self._original_cwd,
+            permission_context=permission_context,
+            permission_context_getter=lambda: self.store.get_state().permission_context,
         )
         self.renderer = Renderer(
             self.console,

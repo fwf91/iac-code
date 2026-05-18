@@ -9,8 +9,8 @@ class TestPermissionMode:
     def test_permission_mode_values(self):
         """Test PermissionMode enum values."""
         assert PermissionMode.DEFAULT.value == "default"
-        assert PermissionMode.PLAN.value == "plan"
-        assert PermissionMode.AUTO.value == "auto"
+        assert PermissionMode.BYPASS_PERMISSIONS.value == "bypass_permissions"
+        assert PermissionMode.DONT_ASK.value == "dont_ask"
 
     def test_permission_mode_is_string_enum(self):
         """Test that PermissionMode is a string enum."""
@@ -20,7 +20,12 @@ class TestPermissionMode:
     def test_all_permission_modes(self):
         """Test that all expected permission modes exist."""
         modes = {m.value for m in PermissionMode}
-        assert modes == {"default", "plan", "auto"}
+        assert modes == {
+            "default",
+            "accept_edits",
+            "bypass_permissions",
+            "dont_ask",
+        }
 
 
 class TestPermissionResult:

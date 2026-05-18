@@ -28,13 +28,13 @@ class TestAppState:
         state = AppState(
             model="gpt-4",
             cwd="/tmp",
-            permission_mode=PermissionMode.AUTO,
+            permission_mode=PermissionMode.BYPASS_PERMISSIONS,
             is_busy=True,
             spinner_text="Working...",
         )
         assert state.model == "gpt-4"
         assert state.cwd == "/tmp"
-        assert state.permission_mode == PermissionMode.AUTO
+        assert state.permission_mode == PermissionMode.BYPASS_PERMISSIONS
         assert state.is_busy is True
         assert state.spinner_text == "Working..."
 

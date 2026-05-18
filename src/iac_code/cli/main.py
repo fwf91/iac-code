@@ -55,6 +55,21 @@ def main(
         is_eager=True,
         help=_("Show completion for the current shell, to copy it or customize the installation."),
     ),
+    allowed_tools: str = typer.Option(
+        "",
+        "--allowed-tools",
+        help=_("Comma-separated tool permission patterns to allow, e.g. 'bash(git *),write_file'"),
+    ),
+    disallowed_tools: str = typer.Option(
+        "",
+        "--disallowed-tools",
+        help=_("Comma-separated tool permission patterns to deny"),
+    ),
+    permission_mode: str = typer.Option(
+        "",
+        "--permission-mode",
+        help=_("Permission mode: default, accept_edits, bypass_permissions, dont_ask"),
+    ),
 ) -> None:
     """IaC Code - AI-powered infrastructure orchestration"""
     if version:
@@ -138,8 +153,17 @@ def main(
         from iac_code.cli.output_formats import OutputFormat
 
         fmt = OutputFormat(output_format)
+        cli_allowed = [s.strip() for s in allowed_tools.split(",") if s.strip()] if allowed_tools else None
+        cli_disallowed = [s.strip() for s in disallowed_tools.split(",") if s.strip()] if disallowed_tools else None
         try:
-            runner = HeadlessRunner(model=model, output_format=fmt, max_turns=max_turns)
+            runner = HeadlessRunner(
+                model=model,
+                output_format=fmt,
+                max_turns=max_turns,
+                cli_allowed_tools=cli_allowed,
+                cli_disallowed_tools=cli_disallowed,
+                cli_permission_mode=permission_mode or None,
+            )
             exit_code = asyncio.run(_run_with_handler(runner.run(prompt)))
         except _QwenPawError as exc:
             typer.echo(str(exc), err=True)
@@ -165,8 +189,18 @@ def main(
 
         resume_arg: str | bool | None = True if continue_session else (resume or None)
 
+        cli_allowed = [s.strip() for s in allowed_tools.split(",") if s.strip()] if allowed_tools else None
+        cli_disallowed = [s.strip() for s in disallowed_tools.split(",") if s.strip()] if disallowed_tools else None
+        cli_perm_mode = permission_mode or None
+
         try:
-            repl = InlineREPL(model=model, resume_session_id=resume_arg)
+            repl = InlineREPL(
+                model=model,
+                resume_session_id=resume_arg,
+                cli_allowed_tools=cli_allowed,
+                cli_disallowed_tools=cli_disallowed,
+                cli_permission_mode=cli_perm_mode,
+            )
         except (ValueError, _QwenPawError) as exc:
             typer.echo(str(exc), err=True)
             raise typer.Exit(1)

@@ -42,11 +42,17 @@ class HeadlessRunner:
         output_format: OutputFormat = OutputFormat.TEXT,
         max_turns: int = 100,
         output_stream: IO[str] | None = None,
+        cli_allowed_tools: list[str] | None = None,
+        cli_disallowed_tools: list[str] | None = None,
+        cli_permission_mode: str | None = None,
     ) -> None:
         self._model = model
         self._output_format = output_format
         self._max_turns = max_turns
         self._output_stream = output_stream or sys.stdout
+        self._cli_allowed_tools = cli_allowed_tools
+        self._cli_disallowed_tools = cli_disallowed_tools
+        self._cli_permission_mode = cli_permission_mode
 
     def _print_provider_not_configured(self, exc: Exception) -> None:
         logger.error("Provider not configured: {}", exc)
@@ -68,6 +74,9 @@ class HeadlessRunner:
             AgentFactoryOptions(
                 model=self._model,
                 max_turns=self._max_turns,
+                cli_allowed_tools=self._cli_allowed_tools,
+                cli_disallowed_tools=self._cli_disallowed_tools,
+                cli_permission_mode=self._cli_permission_mode,
             )
         )
         return runtime.agent_loop

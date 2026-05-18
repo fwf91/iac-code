@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from iac_code.i18n import _
+
+if TYPE_CHECKING:
+    from iac_code.types.permissions import PermissionResult
 from iac_code.tools.base import Tool, ToolContext, ToolResult
 
 
@@ -57,7 +60,9 @@ class BashTool(Tool):
             except asyncio.TimeoutError:
                 process.kill()
                 await process.communicate()
-                return ToolResult.error(f"Command timed out after {timeout} seconds: {command}")
+                return ToolResult.error(
+                    _("Command timed out after {timeout} seconds: {command}").format(timeout=timeout, command=command)
+                )
 
             stdout_str = stdout.decode("utf-8", errors="replace") if stdout else ""
             stderr_str = stderr.decode("utf-8", errors="replace") if stderr else ""
@@ -78,7 +83,7 @@ class BashTool(Tool):
             return ToolResult.success(output)
 
         except Exception as e:
-            return ToolResult.error(f"Error executing command: {e}")
+            return ToolResult.error(_("Error executing command: {}").format(e))
 
     # UI rendering methods
     MAX_COMMAND_DISPLAY_CHARS = 160
@@ -131,3 +136,19 @@ class BashTool(Tool):
 
     def is_destructive(self, input: dict | None = None) -> bool:
         return False
+
+    async def check_permissions(self, input: dict, context=None) -> PermissionResult:
+        from iac_code.types.permissions import PermissionResult, ToolPermissionContext
+
+        command = input.get("command", "")
+        if not command:
+            return PermissionResult(behavior="allow")
+
+        if isinstance(context, ToolPermissionContext):
+            from iac_code.tools.bash.permissions import bash_tool_has_permission
+
+            return await bash_tool_has_permission(command, context)
+
+        if self.is_read_only(input):
+            return PermissionResult(behavior="allow")
+        return PermissionResult(behavior="ask", message=_("Allow {}?").format(self.user_facing_name(input)))

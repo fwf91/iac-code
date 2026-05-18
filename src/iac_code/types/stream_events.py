@@ -128,6 +128,7 @@ class PermissionRequestEvent:
     tool_input: dict[str, Any]
     tool_use_id: str
     response_future: asyncio.Future[bool] | None = field(default=None)
+    permission_result: Any | None = field(default=None)
     type: Literal["permission_request"] = "permission_request"
 
 
