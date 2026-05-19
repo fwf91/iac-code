@@ -125,6 +125,7 @@ class InlineREPL:
         self._resume_messages = self._load_resume_messages(resume_session_id)
         self._task_manager = TaskManager()
         self._notification_queue = NotificationQueue()
+        self._command_log: list[tuple[str, str, int, bool]] = []
 
         memory_dir = str(get_config_dir() / "memory")
         self._memory_manager = MemoryManager(memory_dir=memory_dir)
@@ -580,10 +581,10 @@ class InlineREPL:
         name, args = self.command_registry.parse(user_input)
         cmd = self.command_registry.get(name)
         if cmd is None:
-            self.renderer.print_system_message(
-                _("Unknown command: /{name}. Type /help for available commands.").format(name=name),
-                style="red",
-            )
+            error_msg = _("Unknown command: /{name}. Type /help for available commands.").format(name=name)
+            msg_count = len(self._agent_loop.context_manager.get_messages())
+            self._command_log.append((user_input, error_msg, msg_count, True))
+            self.renderer.print_system_message(error_msg, style="red")
             return
 
         if isinstance(cmd, PromptCommand):
@@ -616,6 +617,10 @@ class InlineREPL:
                     style="red",
                 )
                 return
+            from iac_code.config import get_active_provider_key
+
+            prev_model = self.store.get_state().model
+            prev_provider_key = get_active_provider_key()
             try:
                 handler_call = cmd.handler(
                     context=context,
@@ -632,7 +637,16 @@ class InlineREPL:
                 else:
                     result = await handler_call
                 if result:
-                    self.renderer.print_command_result(user_input, result)
+                    msg_count = len(self._agent_loop.context_manager.get_messages())
+                    self._command_log.append((user_input, result, msg_count, False))
+                # Re-render banner when model/provider actually switched
+                new_state = self.store.get_state()
+                new_provider_key = get_active_provider_key()
+                if new_state.model != prev_model or new_provider_key != prev_provider_key:
+                    self._refresh_banner()
+                else:
+                    if result:
+                        self.renderer.print_command_result(user_input, result)
             except ExitREPLError:
                 raise
             except Exception as exc:
@@ -640,6 +654,46 @@ class InlineREPL:
                     _("Command error: {error}").format(error=exc),
                     style="red",
                 )
+
+    def _refresh_banner(self) -> None:
+        """Clear screen and re-render the welcome banner, then replay history with commands."""
+        self.console.file.write("\033[H\033[2J\033[3J")
+        self.console.file.flush()
+        state = self.store.get_state()
+        self.console.print(render_welcome_banner(state.model, state.cwd, session_id=self._session_id))
+        messages = self._agent_loop.context_manager.get_messages()
+        if not messages and not self._command_log:
+            return
+        # Build ordered list of (position, commands) for interleaving
+        cmd_at: dict[int, list[tuple[str, str, bool]]] = {}
+        for cmd_input, cmd_result, at, is_error in self._command_log:
+            cmd_at.setdefault(at, []).append((cmd_input, cmd_result, is_error))
+        # Find split points where commands need to be inserted
+        split_points = sorted(cmd_at.keys())
+        # Replay messages in segments, inserting commands between segments
+        prev = 0
+        has_output = False
+        for point in split_points:
+            if point > prev and prev < len(messages):
+                if has_output:
+                    self.console.print()
+                self.renderer.replay_history(messages[prev : min(point, len(messages))])
+                has_output = True
+            for cmd_input, cmd_result, is_error in cmd_at[point]:
+                if has_output:
+                    self.console.print()
+                self.renderer.print_user_message(cmd_input)
+                if is_error:
+                    self.renderer.print_system_message(cmd_result, style="red")
+                else:
+                    self.renderer.print_command_result(cmd_input, cmd_result)
+                has_output = True
+            prev = max(prev, point)
+        # Replay remaining messages after last command
+        if prev < len(messages):
+            if has_output:
+                self.console.print()
+            self.renderer.replay_history(messages[prev:])
 
     # ------------------------------------------------------------------
     # Chat handling

@@ -18,24 +18,24 @@ class TestModelLocked:
         store = MagicMock()
         context = MagicMock(store=store)
         result = await model_command(context=context)
-        assert "locked" in result.lower()
-        assert "qwenpaw" in result
+        assert "QwenPaw" in result
+        assert "/auth" in result
 
     async def test_model_locked_when_env(self, monkeypatch):
         monkeypatch.setattr("iac_code.commands.model.get_llm_source", lambda: "env")
         store = MagicMock()
         context = MagicMock(store=store)
         result = await model_command(context=context)
-        assert "locked" in result.lower()
         assert "env" in result
+        assert "/auth" in result
 
     async def test_model_locked_with_args(self, monkeypatch):
         monkeypatch.setattr("iac_code.commands.model.get_llm_source", lambda: "qwenpaw")
         store = MagicMock()
         context = MagicMock(store=store)
         result = await model_command(context=context, args=["gpt-4"])
-        assert "locked" in result.lower()
-        assert "qwenpaw" in result
+        assert "QwenPaw" in result
+        assert "/auth" in result
 
     async def test_model_not_locked_when_local(self, monkeypatch):
         monkeypatch.setattr("iac_code.commands.model.get_llm_source", lambda: "local")

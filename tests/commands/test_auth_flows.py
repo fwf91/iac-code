@@ -139,7 +139,7 @@ class TestLlmAuthFlow:
         def select_side_effect(title, options, default_index=0):
             call_count["select"] += 1
             if call_count["select"] == 1:
-                return 0  # Alibaba Cloud group (multiple items)
+                return 1  # Alibaba Cloud group (multiple items), after partner sources
             if call_count["select"] == 2:
                 return None  # Esc at sub-provider → back to group
             return None  # Esc at group → _BACK
@@ -154,8 +154,10 @@ class TestLlmAuthFlow:
 
         def select_side_effect(title, options, default_index=0):
             call_count["select"] += 1
-            if call_count["select"] <= 2:
-                return 0  # group + sub-provider
+            if call_count["select"] == 1:
+                return 1  # Alibaba Cloud group (after partner sources)
+            if call_count["select"] == 2:
+                return 0  # sub-provider
             return None  # Esc → _BACK
 
         monkeypatch.setattr("iac_code.commands.auth._select", select_side_effect)
@@ -166,8 +168,16 @@ class TestLlmAuthFlow:
         assert call_count["select"] == 3
 
     def test_cancel_at_api_key_input_returns_cancelled(self, monkeypatch):
-        # _select always returns 0 → Alibaba Cloud group → DashScope provider
-        monkeypatch.setattr("iac_code.commands.auth._select", lambda title, options, default_index=0: 0)
+        # _select returns 1 for group (Alibaba Cloud, after partner sources) then 0 for sub-provider
+        call_count = {"n": 0}
+
+        def select_side_effect(title, options, default_index=0):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                return 1  # Alibaba Cloud group (after partner sources)
+            return 0  # DashScope provider
+
+        monkeypatch.setattr("iac_code.commands.auth._select", select_side_effect)
         monkeypatch.setattr("iac_code.commands.auth._load_existing_key", lambda key_name: None)
         monkeypatch.setattr("iac_code.commands.auth._input_masked", lambda *a, **kw: None)
         result = _llm_auth_flow(MagicMock(), MagicMock())
@@ -196,8 +206,16 @@ class TestLlmAuthFlow:
         assert call_count["select"] == 2  # group + group again (no sub-provider step)
 
     def test_successful_config_saves_and_returns_string(self, monkeypatch):
-        # _select always returns 0 → Alibaba Cloud → DashScope (first sub-provider)
-        monkeypatch.setattr("iac_code.commands.auth._select", lambda title, options, default_index=0: 0)
+        # _select returns 1 for group (Alibaba Cloud, after partner sources) then 0 for sub-provider
+        call_count = {"n": 0}
+
+        def select_side_effect(title, options, default_index=0):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                return 1  # Alibaba Cloud group (after partner sources)
+            return 0  # DashScope (first sub-provider)
+
+        monkeypatch.setattr("iac_code.commands.auth._select", select_side_effect)
         monkeypatch.setattr("iac_code.commands.auth._load_existing_key", lambda key_name: None)
         monkeypatch.setattr("iac_code.commands.auth._input_masked", lambda *a, **kw: "test-api-key")
         monkeypatch.setattr(
@@ -373,45 +391,86 @@ class TestCloudAuthFlow:
 
 
 class TestAuthLlmSourceLock:
-    def test_auth_flow_locked_shows_cloud_select_with_lock_notice(self, monkeypatch):
-        """When llm_source is 'qwenpaw', _auth_flow shows lock notice in _select title."""
-        titles_seen = []
-
-        def fake_select(title, options, default_index=0):
-            titles_seen.append(title)
-            return 0  # select first cloud provider (aliyun)
-
-        monkeypatch.setattr("iac_code.commands.auth.get_llm_source", lambda: "qwenpaw")
-        monkeypatch.setattr("iac_code.commands.auth._select", fake_select)
-        monkeypatch.setattr("iac_code.commands.auth._aliyun_auth_flow", lambda: "cloud done")
-        result = _auth_flow(MagicMock(), MagicMock())
-        assert result == "cloud done"
-        assert any("qwenpaw" in t for t in titles_seen)
-
-    def test_auth_flow_locked_env_shows_lock_notice(self, monkeypatch):
-        """When llm_source is 'env', lock notice mentions 'env'."""
-        titles_seen = []
-
-        def fake_select(title, options, default_index=0):
-            titles_seen.append(title)
-            return 0
-
-        monkeypatch.setattr("iac_code.commands.auth.get_llm_source", lambda: "env")
-        monkeypatch.setattr("iac_code.commands.auth._select", fake_select)
-        monkeypatch.setattr("iac_code.commands.auth._aliyun_auth_flow", lambda: "cloud done")
-        _auth_flow(MagicMock(), MagicMock())
-        assert any("env" in t for t in titles_seen)
-
-    def test_auth_flow_locked_escape_returns_cancelled(self, monkeypatch):
-        """When locked and user presses Esc, return cancelled."""
-        monkeypatch.setattr("iac_code.commands.auth.get_llm_source", lambda: "qwenpaw")
+    def test_auth_flow_always_shows_category_selection(self, monkeypatch):
+        """_auth_flow always shows category selection regardless of llm_source."""
         monkeypatch.setattr("iac_code.commands.auth._select", lambda title, options, default_index=0: None)
         result = _auth_flow(MagicMock(), MagicMock())
         assert "cancel" in result.lower()
 
-    def test_auth_flow_normal_when_local(self, monkeypatch):
-        """When llm_source is 'local', _auth_flow shows category selection as usual."""
-        monkeypatch.setattr("iac_code.commands.auth.get_llm_source", lambda: "local")
-        monkeypatch.setattr("iac_code.commands.auth._select", lambda title, options, default_index=0: None)
+    def test_auth_flow_llm_branch_works_with_qwenpaw_source(self, monkeypatch):
+        """Even with qwenpaw source, user can access LLM config."""
+        call_count = {"n": 0}
+
+        def fake_select(title, options, default_index=0):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                return 0  # LLM branch
+            return None
+
+        monkeypatch.setattr("iac_code.commands.auth._select", fake_select)
+        monkeypatch.setattr("iac_code.commands.auth._llm_auth_flow", lambda c, s: "llm-done")
         result = _auth_flow(MagicMock(), MagicMock())
-        assert "cancel" in result.lower()
+        assert result == "llm-done"
+
+
+class TestPartnerSourceInLlmFlow:
+    def test_partner_source_shown_at_top_of_list(self, monkeypatch):
+        """QwenPaw should appear as the first option in provider group selection."""
+        options_seen = []
+
+        def fake_select(title, options, default_index=0):
+            options_seen.extend(options)
+            return None  # Esc
+
+        monkeypatch.setattr("iac_code.commands.auth._select", fake_select)
+        monkeypatch.setattr("iac_code.commands.auth.get_active_provider_key", lambda: None)
+        result = _llm_auth_flow(MagicMock(), MagicMock())
+        assert result is _BACK
+        assert len(options_seen) > 0
+        assert "QwenPaw" in options_seen[0]
+
+    def test_selecting_partner_source_clears_active_provider(self, monkeypatch, iac_home):
+        """Selecting QwenPaw clears activeProvider and sets llm_source."""
+        from iac_code.config import _load_yaml
+
+        settings_path = iac_home / ".iac-code" / "settings.yml"
+        settings_path.parent.mkdir(parents=True, exist_ok=True)
+        settings_path.write_text("activeProvider: dashscope\nproviders:\n  dashscope:\n    model: qwen-plus\n")
+
+        monkeypatch.setattr("iac_code.commands.auth.get_settings_path", lambda: settings_path)
+
+        call_count = {"n": 0}
+
+        def fake_select(title, options, default_index=0):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                return 0  # Select first option (QwenPaw)
+            return None
+
+        monkeypatch.setattr("iac_code.commands.auth._select", fake_select)
+        monkeypatch.setattr("iac_code.commands.auth.get_active_provider_key", lambda: "dashscope")
+        _llm_auth_flow(MagicMock(), MagicMock())
+
+        config = _load_yaml(settings_path)
+        assert "activeProvider" not in config
+        assert config.get("llm_source") == "qwenpaw"
+        # providers dict preserved
+        assert "dashscope" in config.get("providers", {})
+
+    def test_selecting_partner_source_returns_configured_message(self, monkeypatch, iac_home):
+        """Selecting QwenPaw returns a success message."""
+        settings_path = iac_home / ".iac-code" / "settings.yml"
+        settings_path.parent.mkdir(parents=True, exist_ok=True)
+        settings_path.write_text("")
+
+        monkeypatch.setattr("iac_code.commands.auth.get_settings_path", lambda: settings_path)
+
+        def fake_select(title, options, default_index=0):
+            return 0  # Select QwenPaw
+
+        monkeypatch.setattr("iac_code.commands.auth._select", fake_select)
+        monkeypatch.setattr("iac_code.commands.auth.get_active_provider_key", lambda: None)
+        result = _llm_auth_flow(MagicMock(), MagicMock())
+
+        assert isinstance(result, str)
+        assert "QwenPaw" in result

@@ -28,12 +28,16 @@ ACCENT = "bright_cyan"
 def _get_provider_display() -> str:
     """Get the active provider display name from settings."""
     try:
-        from iac_code.config import get_active_provider_key, get_provider_config
+        from iac_code.config import PARTNER_SOURCES, get_active_provider_key, get_llm_source, get_provider_config
         from iac_code.i18n import _
         from iac_code.providers.registry import PROVIDER_REGISTRY
 
         key = get_active_provider_key()
         if not key:
+            llm_source = get_llm_source()
+            for ps in PARTNER_SOURCES:
+                if ps["key"] == llm_source:
+                    return ps["display_name"]
             return ""
         desc = PROVIDER_REGISTRY.get(key)
         if desc:
@@ -91,7 +95,7 @@ def render_welcome_banner(model: str, cwd: str, session_id: str | None = None) -
         Text(),
         Text(f"  {model_display}", style="dim") if model_display else Text(),
         Text(f"  {cwd_display}", style="dim"),
-        Text(f"  {_('Session')}: {session_id}", style="dim") if session_id else Text(),
+        Text("  {}: {}".format(_("Session"), session_id), style="dim") if session_id else Text(),
     ]
 
     from iac_code.utils.log import is_debug_enabled

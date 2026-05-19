@@ -155,7 +155,14 @@ def _get_env_overrides() -> dict[str, str | None]:
 
 
 def get_llm_source() -> str:
-    """Return the LLM source: 'qwenpaw', 'local', or 'env'."""
+    """Return the effective LLM source based on priority chain.
+
+    Priority (highest to lowest):
+    1. Environment variable (IAC_CODE_API_KEY) → "env"
+    2. activeProvider in settings → "local"
+    3. llm_source in settings → partner source value (e.g. "qwenpaw")
+    4. Nothing → "local"
+    """
     env = _get_env_overrides()
     if env["api_key"]:
         return "env"
@@ -163,10 +170,18 @@ def get_llm_source() -> str:
         settings = _load_yaml(get_settings_path())
     except Exception:
         return "local"
+    active = settings.get("activeProvider")
+    if isinstance(active, str) and active.strip():
+        return "local"
     source = settings.get("llm_source")
     if isinstance(source, str) and source.strip():
         return source.strip()
     return "local"
+
+
+PARTNER_SOURCES: list[dict[str, str]] = [
+    {"key": "qwenpaw", "display_name": "QwenPaw"},
+]
 
 
 # ---------------------------------------------------------------------------
