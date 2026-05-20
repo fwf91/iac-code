@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: iac-code 0.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-20 12:34+0800\n"
+"POT-Creation-Date: 2026-05-20 15:23+0800\n"
 "PO-Revision-Date: 2026-04-02 00:00+0000\n"
 "Last-Translator: \n"
 "Language: zh\n"
@@ -519,217 +519,224 @@ msgstr "恢复之前的会话"
 msgid "[conversation id or search term]"
 msgstr "[会话 ID 或搜索词]"
 
-#: src/iac_code/commands/auth.py:245 src/iac_code/commands/auth.py:844
+#: src/iac_code/commands/auth.py:249 src/iac_code/commands/auth.py:883
 #: src/iac_code/ui/core/prompt_input.py:505
 msgid "Navigate"
 msgstr "导航"
 
-#: src/iac_code/commands/auth.py:245 src/iac_code/commands/auth.py:367
-#: src/iac_code/commands/auth.py:401 src/iac_code/commands/auth.py:408
-#: src/iac_code/commands/auth.py:432 src/iac_code/commands/auth.py:844
-#: src/iac_code/commands/auth.py:1034 src/iac_code/ui/core/prompt_input.py:505
+#: src/iac_code/commands/auth.py:249 src/iac_code/commands/auth.py:371
+#: src/iac_code/commands/auth.py:405 src/iac_code/commands/auth.py:412
+#: src/iac_code/commands/auth.py:436 src/iac_code/commands/auth.py:883
+#: src/iac_code/commands/auth.py:1073 src/iac_code/ui/core/prompt_input.py:505
 msgid "Confirm"
 msgstr "确认"
 
-#: src/iac_code/commands/auth.py:245 src/iac_code/commands/auth.py:365
-#: src/iac_code/commands/auth.py:367 src/iac_code/commands/auth.py:401
-#: src/iac_code/commands/auth.py:408 src/iac_code/commands/auth.py:432
-#: src/iac_code/commands/auth.py:844 src/iac_code/commands/auth.py:929
-#: src/iac_code/commands/auth.py:1034
+#: src/iac_code/commands/auth.py:249 src/iac_code/commands/auth.py:369
+#: src/iac_code/commands/auth.py:371 src/iac_code/commands/auth.py:405
+#: src/iac_code/commands/auth.py:412 src/iac_code/commands/auth.py:436
+#: src/iac_code/commands/auth.py:883 src/iac_code/commands/auth.py:968
+#: src/iac_code/commands/auth.py:1073
 msgid "Back"
 msgstr "返回"
 
-#: src/iac_code/commands/auth.py:365
+#: src/iac_code/commands/auth.py:369
 msgid "Keep"
 msgstr "保留"
 
-#: src/iac_code/commands/auth.py:365
+#: src/iac_code/commands/auth.py:369
 msgid "Re-enter"
 msgstr "重新输入"
 
-#: src/iac_code/commands/auth.py:507 src/iac_code/commands/auth.py:638
-#: src/iac_code/commands/auth.py:645 src/iac_code/commands/auth.py:678
+#: src/iac_code/commands/auth.py:511 src/iac_code/commands/auth.py:623
+#: src/iac_code/commands/auth.py:681 src/iac_code/commands/auth.py:689
+#: src/iac_code/commands/auth.py:716
 msgid " (current)"
 msgstr " (当前)"
 
-#: src/iac_code/commands/auth.py:510
+#: src/iac_code/commands/auth.py:514
 msgid "Custom model..."
 msgstr "自定义模型..."
 
-#: src/iac_code/commands/auth.py:513
+#: src/iac_code/commands/auth.py:517
 #, python-brace-format
 msgid "Select model for {provider}"
 msgstr "为 {provider} 选择模型"
 
-#: src/iac_code/commands/auth.py:515
+#: src/iac_code/commands/auth.py:519
 msgid "Select model"
 msgstr "选择模型"
 
-#: src/iac_code/commands/auth.py:523
+#: src/iac_code/commands/auth.py:527
 msgid "Enter custom model name: "
 msgstr "输入自定义模型名称："
 
-#: src/iac_code/commands/auth.py:549
+#: src/iac_code/commands/auth.py:553
 msgid "Error: console not available"
 msgstr "错误：控制台不可用"
 
-#: src/iac_code/commands/auth.py:576
+#: src/iac_code/commands/auth.py:580
 msgid "Configure LLM Provider"
 msgstr "配置 LLM 提供商"
 
-#: src/iac_code/commands/auth.py:577
+#: src/iac_code/commands/auth.py:581
 msgid "Configure IaC Cloud Service"
 msgstr "配置 IaC 云服务"
 
-#: src/iac_code/commands/auth.py:579
+#: src/iac_code/commands/auth.py:583
 msgid "Select configuration type"
 msgstr "选择配置类型"
 
-#: src/iac_code/commands/auth.py:581 src/iac_code/commands/auth.py:703
-#: src/iac_code/commands/auth.py:719 src/iac_code/commands/auth.py:797
-#: src/iac_code/commands/auth.py:970 src/iac_code/commands/auth.py:1011
+#: src/iac_code/commands/auth.py:585 src/iac_code/commands/auth.py:741
+#: src/iac_code/commands/auth.py:757 src/iac_code/commands/auth.py:836
+#: src/iac_code/commands/auth.py:1009 src/iac_code/commands/auth.py:1050
 msgid "Auth cancelled"
 msgstr "认证已取消"
 
-#: src/iac_code/commands/auth.py:649
-msgid "Select provider"
-msgstr "选择提供商"
-
-#: src/iac_code/commands/auth.py:661
-#, python-brace-format
-msgid "{status}: {provider}"
-msgstr "{status}：{provider}"
-
-#: src/iac_code/commands/auth.py:662 src/iac_code/commands/auth.py:751
-msgid "Configured"
-msgstr "已配置"
-
-#: src/iac_code/commands/auth.py:683 src/iac_code/commands/auth.py:772
+#: src/iac_code/commands/auth.py:627 src/iac_code/commands/auth.py:721
+#: src/iac_code/commands/auth.py:811
 #, python-brace-format
 msgid "Select provider — {group}"
 msgstr "选择提供商 — {group}"
 
-#: src/iac_code/commands/auth.py:696
+#: src/iac_code/commands/auth.py:627 src/iac_code/commands/auth.py:679
+#: src/iac_code/commands/auth.py:796
+msgid "Third-party"
+msgstr "第三方"
+
+#: src/iac_code/commands/auth.py:637
+#, python-brace-format
+msgid "{status}: {provider}"
+msgstr "{status}：{provider}"
+
+#: src/iac_code/commands/auth.py:638 src/iac_code/commands/auth.py:789
+msgid "Configured"
+msgstr "已配置"
+
+#: src/iac_code/commands/auth.py:693
+msgid "Select provider"
+msgstr "选择提供商"
+
+#: src/iac_code/commands/auth.py:734
 #, python-brace-format
 msgid "Configure {provider}"
 msgstr "配置 {provider}"
 
-#: src/iac_code/commands/auth.py:712
+#: src/iac_code/commands/auth.py:750
 #, python-brace-format
 msgid "Enter API key for {provider}"
 msgstr "为 {provider} 输入 API 密钥"
 
-#: src/iac_code/commands/auth.py:750
+#: src/iac_code/commands/auth.py:788
 #, python-brace-format
 msgid "{status}: {provider} / {model}"
 msgstr "{status}：{provider} / {model}"
 
-#: src/iac_code/commands/auth.py:758 src/iac_code/commands/auth.py:779
+#: src/iac_code/commands/auth.py:797 src/iac_code/commands/auth.py:818
 msgid "Alibaba Cloud"
 msgstr "阿里云"
 
-#: src/iac_code/commands/auth.py:759 src/iac_code/providers/registry.py:423
+#: src/iac_code/commands/auth.py:798 src/iac_code/providers/registry.py:423
 msgid "ZhiPu AI"
 msgstr "智谱 AI"
 
-#: src/iac_code/commands/auth.py:760
+#: src/iac_code/commands/auth.py:799
 msgid "Kimi"
 msgstr "Kimi"
 
-#: src/iac_code/commands/auth.py:761
+#: src/iac_code/commands/auth.py:800
 msgid "MiniMax"
 msgstr "MiniMax"
 
-#: src/iac_code/commands/auth.py:762 src/iac_code/providers/registry.py:425
+#: src/iac_code/commands/auth.py:801 src/iac_code/providers/registry.py:425
 msgid "Volcengine"
 msgstr "火山引擎"
 
-#: src/iac_code/commands/auth.py:763
+#: src/iac_code/commands/auth.py:802
 msgid "SiliconFlow"
 msgstr "硅基流动"
 
-#: src/iac_code/commands/auth.py:764 src/iac_code/providers/registry.py:416
+#: src/iac_code/commands/auth.py:803 src/iac_code/providers/registry.py:416
 msgid "DeepSeek"
 msgstr "DeepSeek"
 
-#: src/iac_code/commands/auth.py:765 src/iac_code/providers/registry.py:414
+#: src/iac_code/commands/auth.py:804 src/iac_code/providers/registry.py:414
 msgid "OpenAI"
 msgstr "OpenAI"
 
-#: src/iac_code/commands/auth.py:766 src/iac_code/providers/registry.py:415
+#: src/iac_code/commands/auth.py:805 src/iac_code/providers/registry.py:415
 msgid "Anthropic"
 msgstr "Anthropic"
 
-#: src/iac_code/commands/auth.py:767 src/iac_code/providers/registry.py:418
+#: src/iac_code/commands/auth.py:806 src/iac_code/providers/registry.py:418
 msgid "Google Gemini"
 msgstr "Google Gemini"
 
-#: src/iac_code/commands/auth.py:768 src/iac_code/providers/registry.py:431
+#: src/iac_code/commands/auth.py:807 src/iac_code/providers/registry.py:431
 msgid "Azure OpenAI"
 msgstr "Azure OpenAI"
 
-#: src/iac_code/commands/auth.py:769 src/iac_code/providers/registry.py:430
+#: src/iac_code/commands/auth.py:808 src/iac_code/providers/registry.py:430
 msgid "OpenRouter"
 msgstr "OpenRouter"
 
-#: src/iac_code/commands/auth.py:770
+#: src/iac_code/commands/auth.py:809
 msgid "Local"
 msgstr "本地模型"
 
-#: src/iac_code/commands/auth.py:771
+#: src/iac_code/commands/auth.py:810
 msgid "Compatible"
 msgstr "兼容模式"
 
-#: src/iac_code/commands/auth.py:788
+#: src/iac_code/commands/auth.py:827
 msgid "Select Cloud Provider"
 msgstr "选择云服务商"
 
-#: src/iac_code/commands/auth.py:804
+#: src/iac_code/commands/auth.py:843
 msgid "Credential"
 msgstr "凭证"
 
-#: src/iac_code/commands/auth.py:805 src/iac_code/commands/auth.py:902
-#: src/iac_code/commands/auth.py:1007 src/iac_code/ui/renderer.py:418
+#: src/iac_code/commands/auth.py:844 src/iac_code/commands/auth.py:941
+#: src/iac_code/commands/auth.py:1046 src/iac_code/ui/renderer.py:418
 msgid "Region"
 msgstr "地域"
 
-#: src/iac_code/commands/auth.py:807
+#: src/iac_code/commands/auth.py:846
 msgid "Configure Alibaba Cloud"
 msgstr "配置阿里云"
 
-#: src/iac_code/commands/auth.py:890
+#: src/iac_code/commands/auth.py:929
 msgid "Current configuration"
 msgstr "当前配置"
 
-#: src/iac_code/commands/auth.py:892
+#: src/iac_code/commands/auth.py:931
 msgid "Mode"
 msgstr "模式"
 
-#: src/iac_code/commands/auth.py:899
+#: src/iac_code/commands/auth.py:938
 msgid "(not set)"
 msgstr "（未设置）"
 
-#: src/iac_code/commands/auth.py:916
+#: src/iac_code/commands/auth.py:955
 msgid "Configure Alibaba Cloud credentials"
 msgstr "配置阿里云凭证"
 
-#: src/iac_code/commands/auth.py:929
+#: src/iac_code/commands/auth.py:968
 msgid "Reconfigure credential"
 msgstr "重新配置凭证"
 
-#: src/iac_code/commands/auth.py:942
+#: src/iac_code/commands/auth.py:981
 msgid "Select credential type"
 msgstr "选择凭证类型"
 
-#: src/iac_code/commands/auth.py:992
+#: src/iac_code/commands/auth.py:1031
 msgid "Configured: Alibaba Cloud credentials saved to ~/.iac-code"
 msgstr "已配置：阿里云凭证已保存到 ~/.iac-code"
 
-#: src/iac_code/commands/auth.py:999
+#: src/iac_code/commands/auth.py:1038
 msgid "Configure Alibaba Cloud region"
 msgstr "配置阿里云地域"
 
-#: src/iac_code/commands/auth.py:1025
+#: src/iac_code/commands/auth.py:1064
 msgid "Configured: Alibaba Cloud region saved to ~/.iac-code"
 msgstr "已配置：阿里云地域已保存到 ~/.iac-code"
 
@@ -1539,23 +1546,23 @@ msgstr "ROS 资源栈"
 msgid "CloudStackInstances"
 msgstr "云资源栈实例"
 
-#: src/iac_code/ui/banner.py:68
+#: src/iac_code/ui/banner.py:71
 msgid "Your AI-powered Infrastructure as Code assistant"
 msgstr "您的 AI 驱动的基础设施即代码助手"
 
-#: src/iac_code/ui/banner.py:92
+#: src/iac_code/ui/banner.py:95
 msgid "Welcome back"
 msgstr "欢迎回来"
 
-#: src/iac_code/ui/banner.py:98
+#: src/iac_code/ui/banner.py:101
 msgid "Session"
 msgstr "会话"
 
-#: src/iac_code/ui/banner.py:108
+#: src/iac_code/ui/banner.py:111
 msgid "Debug mode"
 msgstr "调试模式"
 
-#: src/iac_code/ui/banner.py:109
+#: src/iac_code/ui/banner.py:112
 msgid "Log file"
 msgstr "日志文件"
 

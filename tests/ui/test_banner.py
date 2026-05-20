@@ -136,6 +136,42 @@ class TestGetProviderDisplay:
             result = banner._get_provider_display()
         assert result == "Alibaba Cloud Bailian Token Plan"
 
+    def test_qwenpaw_source_shows_real_provider(self):
+        """When llm_source is qwenpaw, display includes real provider name."""
+        from unittest.mock import MagicMock
+
+        mock_config = MagicMock()
+        mock_config.provider_key = "dashscope"
+
+        with (
+            patch("iac_code.config.get_active_provider_key", return_value=None),
+            patch("iac_code.config.get_llm_source", return_value="qwenpaw"),
+            patch("iac_code.services.qwenpaw_source.load_from_qwenpaw", return_value=mock_config),
+        ):
+            result = self._call()
+        assert "QwenPaw" in result
+        assert "Alibaba Cloud Bailian" in result
+
+    def test_qwenpaw_source_fallback_on_error(self):
+        """When QwenPaw config fails, display falls back to just 'QwenPaw'."""
+        with (
+            patch("iac_code.config.get_active_provider_key", return_value=None),
+            patch("iac_code.config.get_llm_source", return_value="qwenpaw"),
+            patch("iac_code.services.qwenpaw_source.load_from_qwenpaw", side_effect=RuntimeError("fail")),
+        ):
+            result = self._call()
+        assert result == "QwenPaw"
+
+    def test_qwenpaw_source_no_config_fallback(self):
+        """When QwenPaw returns None config, display falls back to just 'QwenPaw'."""
+        with (
+            patch("iac_code.config.get_active_provider_key", return_value=None),
+            patch("iac_code.config.get_llm_source", return_value="qwenpaw"),
+            patch("iac_code.services.qwenpaw_source.load_from_qwenpaw", return_value=None),
+        ):
+            result = self._call()
+        assert result == "QwenPaw"
+
 
 # ---------------------------------------------------------------------------
 # render_welcome_banner

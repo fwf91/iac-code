@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+
+from iac_code.config import PARTNER_SOURCES, PartnerSource, get_available_partner_sources
 
 
 class TestConfigPaths:
@@ -229,3 +231,65 @@ class TestYamlHelpers:
         _save_yaml(path, {"key": "value"})
 
         assert path.exists()
+
+
+"""Tests for PartnerSource dataclass."""
+
+
+class TestPartnerSource:
+    def test_partner_source_attributes(self):
+        ps = PartnerSource(key="qwenpaw", display_name="QwenPaw")
+        assert ps.key == "qwenpaw"
+        assert ps.display_name == "QwenPaw"
+
+    def test_is_available_qwenpaw_secret_dir_exists(self):
+        ps = PartnerSource(key="qwenpaw", display_name="QwenPaw")
+        with patch("iac_code.services.qwenpaw_source._resolve_secret_dir", return_value="/fake/dir"):
+            assert ps.is_available() is True
+
+    def test_is_available_qwenpaw_secret_dir_missing(self):
+        ps = PartnerSource(key="qwenpaw", display_name="QwenPaw")
+        with patch("iac_code.services.qwenpaw_source._resolve_secret_dir", return_value=None):
+            assert ps.is_available() is False
+
+    def test_is_available_unknown_key(self):
+        ps = PartnerSource(key="unknown", display_name="Unknown")
+        assert ps.is_available() is False
+
+    def test_get_provider_display_qwenpaw(self):
+        ps = PartnerSource(key="qwenpaw", display_name="QwenPaw")
+        mock_config = MagicMock()
+        mock_config.provider_key = "dashscope"
+        with patch("iac_code.services.qwenpaw_source.load_from_qwenpaw", return_value=mock_config):
+            result = ps.get_provider_display()
+        assert result == "Alibaba Cloud Bailian"
+
+    def test_get_provider_display_qwenpaw_no_config(self):
+        ps = PartnerSource(key="qwenpaw", display_name="QwenPaw")
+        with patch("iac_code.services.qwenpaw_source.load_from_qwenpaw", return_value=None):
+            result = ps.get_provider_display()
+        assert result == ""
+
+    def test_get_provider_display_qwenpaw_exception(self):
+        ps = PartnerSource(key="qwenpaw", display_name="QwenPaw")
+        with patch("iac_code.services.qwenpaw_source.load_from_qwenpaw", side_effect=RuntimeError("fail")):
+            result = ps.get_provider_display()
+        assert result == ""
+
+    def test_get_provider_display_unknown_key(self):
+        ps = PartnerSource(key="unknown", display_name="Unknown")
+        assert ps.get_provider_display() == ""
+
+    def test_partner_sources_list_contains_qwenpaw(self):
+        assert any(ps.key == "qwenpaw" for ps in PARTNER_SOURCES)
+
+    def test_get_available_partner_sources_with_available(self):
+        with patch("iac_code.services.qwenpaw_source._resolve_secret_dir", return_value="/fake"):
+            result = get_available_partner_sources()
+        assert len(result) >= 1
+        assert any(ps.key == "qwenpaw" for ps in result)
+
+    def test_get_available_partner_sources_none_available(self):
+        with patch("iac_code.services.qwenpaw_source._resolve_secret_dir", return_value=None):
+            result = get_available_partner_sources()
+        assert len(result) == 0

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: iac-code 0.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-20 12:34+0800\n"
+"POT-Creation-Date: 2026-05-20 15:23+0800\n"
 "PO-Revision-Date: 2026-05-13 00:00+0000\n"
 "Last-Translator: \n"
 "Language: ja\n"
@@ -523,219 +523,226 @@ msgstr "以前のセッションを再開します"
 msgid "[conversation id or search term]"
 msgstr "[会話 ID または検索語]"
 
-#: src/iac_code/commands/auth.py:245 src/iac_code/commands/auth.py:844
+#: src/iac_code/commands/auth.py:249 src/iac_code/commands/auth.py:883
 #: src/iac_code/ui/core/prompt_input.py:505
 msgid "Navigate"
 msgstr "移動"
 
-#: src/iac_code/commands/auth.py:245 src/iac_code/commands/auth.py:367
-#: src/iac_code/commands/auth.py:401 src/iac_code/commands/auth.py:408
-#: src/iac_code/commands/auth.py:432 src/iac_code/commands/auth.py:844
-#: src/iac_code/commands/auth.py:1034 src/iac_code/ui/core/prompt_input.py:505
+#: src/iac_code/commands/auth.py:249 src/iac_code/commands/auth.py:371
+#: src/iac_code/commands/auth.py:405 src/iac_code/commands/auth.py:412
+#: src/iac_code/commands/auth.py:436 src/iac_code/commands/auth.py:883
+#: src/iac_code/commands/auth.py:1073 src/iac_code/ui/core/prompt_input.py:505
 msgid "Confirm"
 msgstr "確認"
 
-#: src/iac_code/commands/auth.py:245 src/iac_code/commands/auth.py:365
-#: src/iac_code/commands/auth.py:367 src/iac_code/commands/auth.py:401
-#: src/iac_code/commands/auth.py:408 src/iac_code/commands/auth.py:432
-#: src/iac_code/commands/auth.py:844 src/iac_code/commands/auth.py:929
-#: src/iac_code/commands/auth.py:1034
+#: src/iac_code/commands/auth.py:249 src/iac_code/commands/auth.py:369
+#: src/iac_code/commands/auth.py:371 src/iac_code/commands/auth.py:405
+#: src/iac_code/commands/auth.py:412 src/iac_code/commands/auth.py:436
+#: src/iac_code/commands/auth.py:883 src/iac_code/commands/auth.py:968
+#: src/iac_code/commands/auth.py:1073
 msgid "Back"
 msgstr "戻る"
 
-#: src/iac_code/commands/auth.py:365
+#: src/iac_code/commands/auth.py:369
 msgid "Keep"
 msgstr "維持"
 
-#: src/iac_code/commands/auth.py:365
+#: src/iac_code/commands/auth.py:369
 msgid "Re-enter"
 msgstr "再入力"
 
-#: src/iac_code/commands/auth.py:507 src/iac_code/commands/auth.py:638
-#: src/iac_code/commands/auth.py:645 src/iac_code/commands/auth.py:678
+#: src/iac_code/commands/auth.py:511 src/iac_code/commands/auth.py:623
+#: src/iac_code/commands/auth.py:681 src/iac_code/commands/auth.py:689
+#: src/iac_code/commands/auth.py:716
 msgid " (current)"
 msgstr " （現在）"
 
-#: src/iac_code/commands/auth.py:510
+#: src/iac_code/commands/auth.py:514
 msgid "Custom model..."
 msgstr "カスタムモデル…"
 
-#: src/iac_code/commands/auth.py:513
+#: src/iac_code/commands/auth.py:517
 #, python-brace-format
 msgid "Select model for {provider}"
 msgstr "{provider} のモデルを選択してください"
 
-#: src/iac_code/commands/auth.py:515
+#: src/iac_code/commands/auth.py:519
 msgid "Select model"
 msgstr "モデルを選択"
 
-#: src/iac_code/commands/auth.py:523
+#: src/iac_code/commands/auth.py:527
 msgid "Enter custom model name: "
 msgstr "カスタムモデル名を入力してください："
 
-#: src/iac_code/commands/auth.py:549
+#: src/iac_code/commands/auth.py:553
 msgid "Error: console not available"
 msgstr "エラー：コンソールを使用できません"
 
-#: src/iac_code/commands/auth.py:576
+#: src/iac_code/commands/auth.py:580
 msgid "Configure LLM Provider"
 msgstr "LLM プロバイダーを設定"
 
-#: src/iac_code/commands/auth.py:577
+#: src/iac_code/commands/auth.py:581
 msgid "Configure IaC Cloud Service"
 msgstr "IaC クラウドサービスを設定"
 
-#: src/iac_code/commands/auth.py:579
+#: src/iac_code/commands/auth.py:583
 msgid "Select configuration type"
 msgstr "設定の種類を選択"
 
-#: src/iac_code/commands/auth.py:581 src/iac_code/commands/auth.py:703
-#: src/iac_code/commands/auth.py:719 src/iac_code/commands/auth.py:797
-#: src/iac_code/commands/auth.py:970 src/iac_code/commands/auth.py:1011
+#: src/iac_code/commands/auth.py:585 src/iac_code/commands/auth.py:741
+#: src/iac_code/commands/auth.py:757 src/iac_code/commands/auth.py:836
+#: src/iac_code/commands/auth.py:1009 src/iac_code/commands/auth.py:1050
 msgid "Auth cancelled"
 msgstr "認証をキャンセルしました"
 
-#: src/iac_code/commands/auth.py:649
-msgid "Select provider"
-msgstr "プロバイダーを選択"
-
-#: src/iac_code/commands/auth.py:661
-#, python-brace-format
-msgid "{status}: {provider}"
-msgstr "{status}：{provider}"
-
-#: src/iac_code/commands/auth.py:662 src/iac_code/commands/auth.py:751
-msgid "Configured"
-msgstr "設定済み"
-
-#: src/iac_code/commands/auth.py:683 src/iac_code/commands/auth.py:772
+#: src/iac_code/commands/auth.py:627 src/iac_code/commands/auth.py:721
+#: src/iac_code/commands/auth.py:811
 #, python-brace-format
 msgid "Select provider — {group}"
 msgstr "プロバイダーを選択 — {group}"
 
-#: src/iac_code/commands/auth.py:696
+#: src/iac_code/commands/auth.py:627 src/iac_code/commands/auth.py:679
+#: src/iac_code/commands/auth.py:796
+msgid "Third-party"
+msgstr "サードパーティ"
+
+#: src/iac_code/commands/auth.py:637
+#, python-brace-format
+msgid "{status}: {provider}"
+msgstr "{status}：{provider}"
+
+#: src/iac_code/commands/auth.py:638 src/iac_code/commands/auth.py:789
+msgid "Configured"
+msgstr "設定済み"
+
+#: src/iac_code/commands/auth.py:693
+msgid "Select provider"
+msgstr "プロバイダーを選択"
+
+#: src/iac_code/commands/auth.py:734
 #, python-brace-format
 msgid "Configure {provider}"
 msgstr "{provider} を設定"
 
-#: src/iac_code/commands/auth.py:712
+#: src/iac_code/commands/auth.py:750
 #, python-brace-format
 msgid "Enter API key for {provider}"
 msgstr "{provider} の API key を入力してください"
 
-#: src/iac_code/commands/auth.py:750
+#: src/iac_code/commands/auth.py:788
 #, python-brace-format
 msgid "{status}: {provider} / {model}"
 msgstr "{status}：{provider} / {model}"
 
-#: src/iac_code/commands/auth.py:758 src/iac_code/commands/auth.py:779
+#: src/iac_code/commands/auth.py:797 src/iac_code/commands/auth.py:818
 msgid "Alibaba Cloud"
 msgstr "Alibaba Cloud"
 
-#: src/iac_code/commands/auth.py:759 src/iac_code/providers/registry.py:423
+#: src/iac_code/commands/auth.py:798 src/iac_code/providers/registry.py:423
 msgid "ZhiPu AI"
 msgstr "ZhiPu AI"
 
-#: src/iac_code/commands/auth.py:760
+#: src/iac_code/commands/auth.py:799
 msgid "Kimi"
 msgstr "Kimi"
 
-#: src/iac_code/commands/auth.py:761
+#: src/iac_code/commands/auth.py:800
 msgid "MiniMax"
 msgstr "MiniMax"
 
-#: src/iac_code/commands/auth.py:762 src/iac_code/providers/registry.py:425
+#: src/iac_code/commands/auth.py:801 src/iac_code/providers/registry.py:425
 msgid "Volcengine"
 msgstr "Volcengine"
 
-#: src/iac_code/commands/auth.py:763
+#: src/iac_code/commands/auth.py:802
 msgid "SiliconFlow"
 msgstr "SiliconFlow"
 
-#: src/iac_code/commands/auth.py:764 src/iac_code/providers/registry.py:416
+#: src/iac_code/commands/auth.py:803 src/iac_code/providers/registry.py:416
 msgid "DeepSeek"
 msgstr "DeepSeek"
 
-#: src/iac_code/commands/auth.py:765 src/iac_code/providers/registry.py:414
+#: src/iac_code/commands/auth.py:804 src/iac_code/providers/registry.py:414
 msgid "OpenAI"
 msgstr "OpenAI"
 
-#: src/iac_code/commands/auth.py:766 src/iac_code/providers/registry.py:415
+#: src/iac_code/commands/auth.py:805 src/iac_code/providers/registry.py:415
 msgid "Anthropic"
 msgstr "Anthropic"
 
-#: src/iac_code/commands/auth.py:767 src/iac_code/providers/registry.py:418
+#: src/iac_code/commands/auth.py:806 src/iac_code/providers/registry.py:418
 msgid "Google Gemini"
 msgstr "Google Gemini"
 
-#: src/iac_code/commands/auth.py:768 src/iac_code/providers/registry.py:431
+#: src/iac_code/commands/auth.py:807 src/iac_code/providers/registry.py:431
 msgid "Azure OpenAI"
 msgstr "Azure OpenAI"
 
-#: src/iac_code/commands/auth.py:769 src/iac_code/providers/registry.py:430
+#: src/iac_code/commands/auth.py:808 src/iac_code/providers/registry.py:430
 msgid "OpenRouter"
 msgstr "OpenRouter"
 
-#: src/iac_code/commands/auth.py:770
+#: src/iac_code/commands/auth.py:809
 msgid "Local"
 msgstr "ローカル"
 
-#: src/iac_code/commands/auth.py:771
+#: src/iac_code/commands/auth.py:810
 msgid "Compatible"
 msgstr "互換モード"
 
-#: src/iac_code/commands/auth.py:788
+#: src/iac_code/commands/auth.py:827
 msgid "Select Cloud Provider"
 msgstr "クラウドプロバイダーを選択"
 
-#: src/iac_code/commands/auth.py:804
+#: src/iac_code/commands/auth.py:843
 msgid "Credential"
 msgstr "クレデンシャル"
 
-#: src/iac_code/commands/auth.py:805 src/iac_code/commands/auth.py:902
-#: src/iac_code/commands/auth.py:1007 src/iac_code/ui/renderer.py:418
+#: src/iac_code/commands/auth.py:844 src/iac_code/commands/auth.py:941
+#: src/iac_code/commands/auth.py:1046 src/iac_code/ui/renderer.py:418
 msgid "Region"
 msgstr "リージョン"
 
-#: src/iac_code/commands/auth.py:807
+#: src/iac_code/commands/auth.py:846
 msgid "Configure Alibaba Cloud"
 msgstr "Alibaba Cloud を設定"
 
-#: src/iac_code/commands/auth.py:890
+#: src/iac_code/commands/auth.py:929
 msgid "Current configuration"
 msgstr "現在の設定"
 
-#: src/iac_code/commands/auth.py:892
+#: src/iac_code/commands/auth.py:931
 msgid "Mode"
 msgstr "モード"
 
-#: src/iac_code/commands/auth.py:899
+#: src/iac_code/commands/auth.py:938
 msgid "(not set)"
 msgstr "（未設定）"
 
-#: src/iac_code/commands/auth.py:916
+#: src/iac_code/commands/auth.py:955
 msgid "Configure Alibaba Cloud credentials"
 msgstr "Alibaba Cloud のクレデンシャルを設定"
 
-#: src/iac_code/commands/auth.py:929
+#: src/iac_code/commands/auth.py:968
 msgid "Reconfigure credential"
 msgstr "クレデンシャルを再設定"
 
-#: src/iac_code/commands/auth.py:942
+#: src/iac_code/commands/auth.py:981
 msgid "Select credential type"
 msgstr "クレデンシャルの種類を選択"
 
-#: src/iac_code/commands/auth.py:992
+#: src/iac_code/commands/auth.py:1031
 msgid "Configured: Alibaba Cloud credentials saved to ~/.iac-code"
 msgstr ""
 "Configured: Alibaba Cloud credentials saved to ~/.iac-code設定しました：Alibaba "
 "Cloud のクレデンシャルを ~/.iac-code に保存しました"
 
-#: src/iac_code/commands/auth.py:999
+#: src/iac_code/commands/auth.py:1038
 msgid "Configure Alibaba Cloud region"
 msgstr "Alibaba Cloud のリージョンを設定"
 
-#: src/iac_code/commands/auth.py:1025
+#: src/iac_code/commands/auth.py:1064
 msgid "Configured: Alibaba Cloud region saved to ~/.iac-code"
 msgstr "設定しました：Alibaba Cloud のリージョンを ~/.iac-code に保存しました"
 
@@ -1552,23 +1559,23 @@ msgstr "ROS スタック"
 msgid "CloudStackInstances"
 msgstr "CloudStackInstances"
 
-#: src/iac_code/ui/banner.py:68
+#: src/iac_code/ui/banner.py:71
 msgid "Your AI-powered Infrastructure as Code assistant"
 msgstr "あなたの AI 駆動の Infrastructure as Code アシスタントです"
 
-#: src/iac_code/ui/banner.py:92
+#: src/iac_code/ui/banner.py:95
 msgid "Welcome back"
 msgstr "おかえりなさい"
 
-#: src/iac_code/ui/banner.py:98
+#: src/iac_code/ui/banner.py:101
 msgid "Session"
 msgstr "セッション"
 
-#: src/iac_code/ui/banner.py:108
+#: src/iac_code/ui/banner.py:111
 msgid "Debug mode"
 msgstr "デバッグモード"
 
-#: src/iac_code/ui/banner.py:109
+#: src/iac_code/ui/banner.py:112
 msgid "Log file"
 msgstr "ログファイル"
 
