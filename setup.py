@@ -5,6 +5,7 @@ import subprocess
 import sys
 from datetime import date
 from pathlib import Path
+import platform
 
 from setuptools import setup
 from setuptools.command.build_py import build_py
@@ -110,6 +111,8 @@ def _compile_translations():
 
 
 def _replace_release_date():
+    if platform.system() == 'Darwin':
+        return
     content = INIT_PATH.read_text(encoding="utf-8")
     today = date.today().isoformat()
     content = re.sub(

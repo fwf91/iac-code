@@ -18,7 +18,6 @@ from iac_code.config import (
     _save_yaml,
     get_active_provider_key,
     get_credentials_path,
-    get_llm_source,
     get_provider_config,
     get_settings_path,
 )
@@ -564,33 +563,15 @@ async def auth_command(context: "CommandContext | None" = None, **kwargs) -> str
     # immediately — _on_state_change may skip reinit when only the API key
     # changed but the model and provider config stayed the same.
     if context and hasattr(context, "repl") and context.repl:
-        context.repl._reinitialize_provider(context.repl.store.get_state().model)
+        repl = context.repl
+        repl._reinitialize_provider(repl.store.get_state().model)
 
     return result
 
 
 def _auth_flow(console, store) -> str | None:
     """Auth flow running inside alternate screen."""
-    llm_source = get_llm_source()
-    if llm_source != "local":
-        lock_notice = _("LLM provider is locked by '{source}'. To change, modify llm_source in settings.yml.").format(
-            source=llm_source
-        )
-        options = [_cloud_provider_display(p["name"]) for p in CLOUD_PROVIDERS]
-        idx = _select("{}\n\n{}".format(lock_notice, _("Select Cloud Provider")), options)
-        if idx is None:
-            return _("Auth cancelled")
-        provider = CLOUD_PROVIDERS[idx]
-        if provider["name"] == "aliyun":
-            result = _aliyun_auth_flow()
-        else:
-            result = _BACK
-        if isinstance(result, _BackSentinel):
-            return _("Auth cancelled")
-        return result
-
     while True:
-        # Step 0: Select category
         categories = [
             _("Configure LLM Provider"),
             _("Configure IaC Cloud Service"),
@@ -605,7 +586,7 @@ def _auth_flow(console, store) -> str | None:
             result = _cloud_auth_flow(console)
 
         if isinstance(result, _BackSentinel):
-            continue  # Go back to category selection
+            continue
         return result
 
 
@@ -640,22 +621,49 @@ def _llm_auth_flow(console, store) -> str | None | _BackSentinel:
 
     provider_map: dict[str, LLMProvider] = {str(p["key_name"]): p for p in PROVIDERS}
 
+    from iac_code.config import PARTNER_SOURCES, get_llm_source
+
+    num_partner_sources = len(PARTNER_SOURCES)
+
+    current_llm_source = get_llm_source()
+
     while True:
-        # Step 1: Select vendor group
+        # Step 1: Select vendor group (partner sources shown at the top)
         group_options: list[str] = []
         group_default_idx = 0
+
+        for i, ps in enumerate(PARTNER_SOURCES):
+            label = ps["display_name"]
+            if current_llm_source == ps["key"]:
+                label += _(" (current)")
+                group_default_idx = i
+            group_options.append(label)
+
         for i, (group_name, keys) in enumerate(provider_groups):
             label = _(group_name)
             if active_key_name in keys:
                 label += _(" (current)")
-                group_default_idx = i
+                group_default_idx = i + num_partner_sources
             group_options.append(label)
 
         group_idx = _select(_("Select provider"), group_options, default_index=group_default_idx)
         if group_idx is None:
             return _BACK
 
-        group_name, group_keys = provider_groups[group_idx]
+        # Handle partner source selection
+        if group_idx < num_partner_sources:
+            partner = PARTNER_SOURCES[group_idx]
+            settings_path = get_settings_path()
+            config = _load_yaml(settings_path)
+            config.pop("activeProvider", None)
+            config["llm_source"] = partner["key"]
+            _save_yaml(settings_path, config)
+            return _("{status}: {provider}").format(
+                status=_("Configured"),
+                provider=partner["display_name"],
+            )
+
+        group_name, group_keys = provider_groups[group_idx - num_partner_sources]
         group_providers = [provider_map[k] for k in group_keys if k in provider_map]
 
         # Step 2: Select provider within group (skip if only one)
