@@ -9,6 +9,7 @@ expansion supported); when set, every persisted artifact follows.
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -179,9 +180,45 @@ def get_llm_source() -> str:
     return "local"
 
 
-PARTNER_SOURCES: list[dict[str, str]] = [
-    {"key": "qwenpaw", "display_name": "QwenPaw"},
+@dataclass(frozen=True)
+class PartnerSource:
+    key: str
+    display_name: str
+
+    def is_available(self) -> bool:
+        if self.key == "qwenpaw":
+            from iac_code.services.qwenpaw_source import _resolve_secret_dir
+
+            return _resolve_secret_dir() is not None
+        return False
+
+    def get_provider_display(self) -> str:
+        if self.key == "qwenpaw":
+            from iac_code.services.qwenpaw_source import load_from_qwenpaw
+
+            try:
+                config = load_from_qwenpaw()
+            except Exception:
+                return ""
+            if config:
+                from iac_code.providers.registry import PROVIDER_REGISTRY
+
+                desc = PROVIDER_REGISTRY.get(config.provider_key)
+                if desc:
+                    from iac_code.i18n import _
+
+                    return _(desc.display_name)
+                return config.provider_key
+        return ""
+
+
+PARTNER_SOURCES: list[PartnerSource] = [
+    PartnerSource(key="qwenpaw", display_name="QwenPaw"),
 ]
+
+
+def get_available_partner_sources() -> list[PartnerSource]:
+    return [ps for ps in PARTNER_SOURCES if ps.is_available()]
 
 
 # ---------------------------------------------------------------------------

@@ -14,10 +14,14 @@ if TYPE_CHECKING:
 
 from iac_code.config import (
     _LEGACY_KEY_NAME_ALIASES,
+    PARTNER_SOURCES,
+    PartnerSource,
     _load_yaml,
     _save_yaml,
     get_active_provider_key,
+    get_available_partner_sources,
     get_credentials_path,
+    get_llm_source,
     get_provider_config,
     get_settings_path,
 )
@@ -595,6 +599,47 @@ def _get_active_key_name() -> str:
     return get_active_provider_key() or ""
 
 
+def _third_party_auth_flow(
+    available_partners: list[PartnerSource],
+    current_llm_source: str,
+) -> str | None | _BackSentinel:
+    """Second-level selection within the Third-party category."""
+    candidates = list(available_partners)
+    if any(ps.key == current_llm_source for ps in PARTNER_SOURCES):
+        if not any(ps.key == current_llm_source for ps in candidates):
+            for ps in PARTNER_SOURCES:
+                if ps.key == current_llm_source:
+                    candidates.append(ps)
+                    break
+
+    if len(candidates) == 0:
+        return _BACK
+
+    options: list[str] = []
+    default_idx = 0
+    for i, ps in enumerate(candidates):
+        label = ps.display_name
+        if current_llm_source == ps.key:
+            label += _(" (current)")
+            default_idx = i
+        options.append(label)
+
+    idx = _select(_("Select provider — {group}").format(group=_("Third-party")), options, default_index=default_idx)
+    if idx is None:
+        return _BACK
+    partner = candidates[idx]
+
+    settings_path = get_settings_path()
+    config = _load_yaml(settings_path)
+    config.pop("activeProvider", None)
+    config["llm_source"] = partner.key
+    _save_yaml(settings_path, config)
+    return _("{status}: {provider}").format(
+        status=_("Configured"),
+        provider=partner.display_name,
+    )
+
+
 def _llm_auth_flow(console, store) -> str | None | _BackSentinel:
     """LLM provider auth flow with two-step vendor group selection."""
     active_key_name = _get_active_key_name()
@@ -621,49 +666,42 @@ def _llm_auth_flow(console, store) -> str | None | _BackSentinel:
 
     provider_map: dict[str, LLMProvider] = {str(p["key_name"]): p for p in PROVIDERS}
 
-    from iac_code.config import PARTNER_SOURCES, get_llm_source
-
-    num_partner_sources = len(PARTNER_SOURCES)
-
     current_llm_source = get_llm_source()
+    available_partners = get_available_partner_sources()
+    is_current_partner = any(ps.key == current_llm_source for ps in PARTNER_SOURCES)
+    show_third_party = len(available_partners) > 0 or is_current_partner
 
     while True:
-        # Step 1: Select vendor group (partner sources shown at the top)
         group_options: list[str] = []
         group_default_idx = 0
 
-        for i, ps in enumerate(PARTNER_SOURCES):
-            label = ps["display_name"]
-            if current_llm_source == ps["key"]:
+        if show_third_party:
+            label = _("Third-party")
+            if is_current_partner:
                 label += _(" (current)")
-                group_default_idx = i
+                group_default_idx = 0
             group_options.append(label)
 
         for i, (group_name, keys) in enumerate(provider_groups):
             label = _(group_name)
+            offset = 1 if show_third_party else 0
             if active_key_name in keys:
                 label += _(" (current)")
-                group_default_idx = i + num_partner_sources
+                group_default_idx = i + offset
             group_options.append(label)
 
         group_idx = _select(_("Select provider"), group_options, default_index=group_default_idx)
         if group_idx is None:
             return _BACK
 
-        # Handle partner source selection
-        if group_idx < num_partner_sources:
-            partner = PARTNER_SOURCES[group_idx]
-            settings_path = get_settings_path()
-            config = _load_yaml(settings_path)
-            config.pop("activeProvider", None)
-            config["llm_source"] = partner["key"]
-            _save_yaml(settings_path, config)
-            return _("{status}: {provider}").format(
-                status=_("Configured"),
-                provider=partner["display_name"],
-            )
+        if show_third_party and group_idx == 0:
+            result = _third_party_auth_flow(available_partners, current_llm_source)
+            if isinstance(result, _BackSentinel):
+                continue
+            return result
 
-        group_name, group_keys = provider_groups[group_idx - num_partner_sources]
+        offset = 1 if show_third_party else 0
+        group_name, group_keys = provider_groups[group_idx - offset]
         group_providers = [provider_map[k] for k in group_keys if k in provider_map]
 
         # Step 2: Select provider within group (skip if only one)
@@ -755,6 +793,7 @@ def _llm_auth_flow(console, store) -> str | None | _BackSentinel:
 
 
 _GROUP_NAME_MARKERS = [
+    _("Third-party"),
     _("Alibaba Cloud"),
     _("ZhiPu AI"),
     _("Kimi"),

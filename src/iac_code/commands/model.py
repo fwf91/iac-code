@@ -50,8 +50,8 @@ async def model_command(context: "CommandContext | None" = None, args: list[str]
 
         display_name = llm_source
         for ps in PARTNER_SOURCES:
-            if ps["key"] == llm_source:
-                display_name = ps["display_name"]
+            if ps.key == llm_source:
+                display_name = ps.display_name
                 break
         return _(
             "Model is managed by '{source}'. To change model, modify it in {source} or switch provider via /auth."

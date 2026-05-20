@@ -36,8 +36,11 @@ def _get_provider_display() -> str:
         if not key:
             llm_source = get_llm_source()
             for ps in PARTNER_SOURCES:
-                if ps["key"] == llm_source:
-                    return ps["display_name"]
+                if ps.key == llm_source:
+                    real_provider = ps.get_provider_display()
+                    if real_provider:
+                        return "{} / {}".format(ps.display_name, real_provider)
+                    return ps.display_name
             return ""
         desc = PROVIDER_REGISTRY.get(key)
         if desc:
