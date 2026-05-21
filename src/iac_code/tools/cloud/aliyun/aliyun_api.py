@@ -54,6 +54,11 @@ def _load_endpoints() -> dict[str, Any]:
 
 _ENDPOINTS: dict[str, Any] = _load_endpoints()
 
+# Case-insensitive lookup tables for product codes (built once at module load)
+_VERSION_MAP_LOWER: dict[str, str] = {k.lower(): v for k, v in VERSION_MAP.items()}
+_PRODUCT_CANONICAL: dict[str, str] = {k.lower(): k for k in VERSION_MAP}
+_ENDPOINTS_CANONICAL: dict[str, str] = {k.lower(): k for k in _ENDPOINTS}
+
 # Cache for Location service discovered endpoints
 _endpoint_cache: dict[tuple[str, str], str | None] = {}
 
@@ -232,6 +237,9 @@ class AliyunApi(BaseCloudApi):
         product = input.get("product", "")
         if product in VERSION_MAP:
             return VERSION_MAP[product]
+        version = _VERSION_MAP_LOWER.get(product.lower())
+        if version:
+            return version
         raise ValueError(
             f"No built-in version for product '{product}'. Please provide an explicit 'version' parameter."
         )
@@ -241,7 +249,11 @@ class AliyunApi(BaseCloudApi):
         """Resolve endpoint from endpoints.yml. Returns None if not found."""
         config = _ENDPOINTS.get(product)
         if config is None:
-            return None
+            canonical = _ENDPOINTS_CANONICAL.get(product.lower())
+            if canonical:
+                config = _ENDPOINTS[canonical]
+            else:
+                return None
         # Global central endpoint (all regions)
         if "endpoint" in config:
             return config["endpoint"]
@@ -374,6 +386,7 @@ class AliyunApi(BaseCloudApi):
 
     async def execute(self, *, tool_input: dict[str, Any], context: ToolContext) -> ToolResult:
         product = tool_input.get("product", "")
+        product = _PRODUCT_CANONICAL.get(product.lower(), product)
         action = tool_input.get("action", "")
         params = tool_input.get("params") or {}
         region = self._resolve_region(tool_input)
@@ -384,6 +397,12 @@ class AliyunApi(BaseCloudApi):
             if template_url and not template_url.startswith(("http://", "https://", "oss://")):
                 params["TemplateBody"] = Path(template_url).read_text()
                 del params["TemplateURL"]
+
+        # Pre-call hooks (e.g. resource type validation)
+        from iac_code.tools.cloud.aliyun.api_hooks import run_hooks
+
+        if hook_result := run_hooks(product, action, params):
+            return hook_result
 
         try:
             version = self._resolve_version(tool_input)

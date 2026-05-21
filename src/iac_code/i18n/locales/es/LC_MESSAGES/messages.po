@@ -4,9 +4,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: iac-code 0.2.0\n"
+"Project-Id-Version: iac-code 0.2.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-20 15:23+0800\n"
+"POT-Creation-Date: 2026-05-21 09:26+0800\n"
 "PO-Revision-Date: 2026-05-13 00:00+0000\n"
 "Last-Translator: \n"
 "Language: es\n"
@@ -660,7 +660,7 @@ msgstr "{status}: {provider} / {model}"
 msgid "Alibaba Cloud"
 msgstr "Alibaba Cloud"
 
-#: src/iac_code/commands/auth.py:798 src/iac_code/providers/registry.py:423
+#: src/iac_code/commands/auth.py:798 src/iac_code/providers/registry.py:426
 msgid "ZhiPu AI"
 msgstr "ZhiPu AI"
 
@@ -672,7 +672,7 @@ msgstr "Kimi"
 msgid "MiniMax"
 msgstr "MiniMax"
 
-#: src/iac_code/commands/auth.py:801 src/iac_code/providers/registry.py:425
+#: src/iac_code/commands/auth.py:801 src/iac_code/providers/registry.py:428
 msgid "Volcengine"
 msgstr "Volcengine"
 
@@ -680,27 +680,27 @@ msgstr "Volcengine"
 msgid "SiliconFlow"
 msgstr "SiliconFlow"
 
-#: src/iac_code/commands/auth.py:803 src/iac_code/providers/registry.py:416
+#: src/iac_code/commands/auth.py:803 src/iac_code/providers/registry.py:419
 msgid "DeepSeek"
 msgstr "DeepSeek"
 
-#: src/iac_code/commands/auth.py:804 src/iac_code/providers/registry.py:414
+#: src/iac_code/commands/auth.py:804 src/iac_code/providers/registry.py:417
 msgid "OpenAI"
 msgstr "OpenAI"
 
-#: src/iac_code/commands/auth.py:805 src/iac_code/providers/registry.py:415
+#: src/iac_code/commands/auth.py:805 src/iac_code/providers/registry.py:418
 msgid "Anthropic"
 msgstr "Anthropic"
 
-#: src/iac_code/commands/auth.py:806 src/iac_code/providers/registry.py:418
+#: src/iac_code/commands/auth.py:806 src/iac_code/providers/registry.py:421
 msgid "Google Gemini"
 msgstr "Google Gemini"
 
-#: src/iac_code/commands/auth.py:807 src/iac_code/providers/registry.py:431
+#: src/iac_code/commands/auth.py:807 src/iac_code/providers/registry.py:434
 msgid "Azure OpenAI"
 msgstr "Azure OpenAI"
 
-#: src/iac_code/commands/auth.py:808 src/iac_code/providers/registry.py:430
+#: src/iac_code/commands/auth.py:808 src/iac_code/providers/registry.py:433
 msgid "OpenRouter"
 msgstr "OpenRouter"
 
@@ -984,79 +984,79 @@ msgstr ""
 " correcta (actual: {base_url}). Muchos endpoints compatibles con OpenAI "
 "requieren el sufijo /v1 (p. ej., {base_url}/v1)."
 
-#: src/iac_code/providers/registry.py:412
+#: src/iac_code/providers/registry.py:415
 msgid "Alibaba Cloud Bailian"
 msgstr "Alibaba Cloud Bailian"
 
-#: src/iac_code/providers/registry.py:413
+#: src/iac_code/providers/registry.py:416
 msgid "Alibaba Cloud Bailian Token Plan"
 msgstr "Alibaba Cloud Bailian Token Plan"
 
-#: src/iac_code/providers/registry.py:417
+#: src/iac_code/providers/registry.py:420
 msgid "OpenAPI Compatible"
 msgstr "Compatible con OpenAPI"
 
-#: src/iac_code/providers/registry.py:419
+#: src/iac_code/providers/registry.py:422
 msgid "Kimi (China)"
 msgstr "Kimi (China)"
 
-#: src/iac_code/providers/registry.py:420
+#: src/iac_code/providers/registry.py:423
 msgid "Kimi (International)"
 msgstr "Kimi (Internacional)"
 
-#: src/iac_code/providers/registry.py:421
+#: src/iac_code/providers/registry.py:424
 msgid "MiniMax (China)"
 msgstr "MiniMax (China)"
 
-#: src/iac_code/providers/registry.py:422
+#: src/iac_code/providers/registry.py:425
 msgid "MiniMax (International)"
 msgstr "MiniMax (Internacional)"
 
-#: src/iac_code/providers/registry.py:424
+#: src/iac_code/providers/registry.py:427
 msgid "ZhiPu AI (International)"
 msgstr "ZhiPu AI (Internacional)"
 
-#: src/iac_code/providers/registry.py:426
+#: src/iac_code/providers/registry.py:429
 msgid "SiliconFlow (China)"
 msgstr "SiliconFlow (China)"
 
-#: src/iac_code/providers/registry.py:427
+#: src/iac_code/providers/registry.py:430
 msgid "SiliconFlow (International)"
 msgstr "SiliconFlow (Internacional)"
 
-#: src/iac_code/providers/registry.py:428
+#: src/iac_code/providers/registry.py:431
 msgid "Ollama (Local)"
 msgstr "Ollama (Local)"
 
-#: src/iac_code/providers/registry.py:429
+#: src/iac_code/providers/registry.py:432
 msgid "LM Studio (Local)"
 msgstr "LM Studio (Local)"
 
-#: src/iac_code/providers/registry.py:432
+#: src/iac_code/providers/registry.py:435
 msgid "ModelScope"
 msgstr "ModelScope"
 
-#: src/iac_code/providers/registry.py:433
+#: src/iac_code/providers/registry.py:436
 msgid "Alibaba Cloud CodingPlan"
 msgstr "Alibaba Cloud CodingPlan"
 
-#: src/iac_code/providers/registry.py:434
+#: src/iac_code/providers/registry.py:437
 msgid "Alibaba Cloud CodingPlan (International)"
 msgstr "Alibaba Cloud CodingPlan (Internacional)"
 
-#: src/iac_code/providers/registry.py:435
+#: src/iac_code/providers/registry.py:438
 msgid "ZhiPu AI CodingPlan"
 msgstr "ZhiPu AI CodingPlan"
 
-#: src/iac_code/providers/registry.py:436
+#: src/iac_code/providers/registry.py:439
 msgid "ZhiPu AI CodingPlan (International)"
 msgstr "ZhiPu AI CodingPlan (Internacional)"
 
-#: src/iac_code/providers/registry.py:437
+#: src/iac_code/providers/registry.py:440
 msgid "Volcengine CodingPlan"
 msgstr "Volcengine CodingPlan"
 
-#: src/iac_code/providers/registry.py:438
+#: src/iac_code/providers/registry.py:441
 msgid "Anthropic Compatible"
 msgstr "Compatible con Anthropic"
 
@@ -1359,7 +1359,7 @@ msgstr "CloudAPI"
 msgid "Calling {action}..."
 msgstr "Llamando a {action}..."
 
-#: src/iac_code/tools/cloud/aliyun/aliyun_api.py:373
+#: src/iac_code/tools/cloud/aliyun/aliyun_api.py:385
 #: src/iac_code/tools/cloud/base_api.py:123
 msgid "Call succeeded"
 msgstr "Llamada correcta"
@@ -1519,11 +1519,11 @@ msgstr "Importación completada"
 msgid "IMPORT_FAILED"
 msgstr "Importación fallida"
 
-#: src/iac_code/tools/cloud/aliyun/aliyun_api.py:165
+#: src/iac_code/tools/cloud/aliyun/aliyun_api.py:170
 msgid "Aliyun API"
 msgstr "Aliyun API"
 
-#: src/iac_code/tools/cloud/aliyun/aliyun_api.py:372
+#: src/iac_code/tools/cloud/aliyun/aliyun_api.py:384
 #, python-brace-format
 msgid "Call succeeded (RequestId: {request_id})"
 msgstr "Llamada correcta (RequestId: {request_id})"

@@ -112,6 +112,18 @@ class TestAliyunApiVersionResolution:
         with pytest.raises(ValueError, match="unknown-product"):
             api._resolve_version({"product": "unknown-product"})
 
+    def test_case_insensitive_ros(self, api: AliyunApi) -> None:
+        assert api._resolve_version({"product": "ROS"}) == "2019-09-10"
+        assert api._resolve_version({"product": "Ros"}) == "2019-09-10"
+
+    def test_case_insensitive_ecs(self, api: AliyunApi) -> None:
+        assert api._resolve_version({"product": "ECS"}) == "2014-05-26"
+
+    def test_case_insensitive_preserves_mixed_case(self, api: AliyunApi) -> None:
+        assert api._resolve_version({"product": "IaCService"}) == "2021-08-06"
+        assert api._resolve_version({"product": "iacservice"}) == "2021-08-06"
+        assert api._resolve_version({"product": "IACSERVICE"}) == "2021-08-06"
+
 
 class TestAliyunApiEndpoint:
     def test_central_only(self, api: AliyunApi) -> None:
@@ -151,6 +163,11 @@ class TestAliyunApiEndpoint:
     def test_unknown_product_returns_none(self, api: AliyunApi) -> None:
         assert api._get_endpoint("unknown", "cn-hangzhou") is None
         assert api._get_endpoint("unknown") is None
+
+    def test_case_insensitive_endpoint(self, api: AliyunApi) -> None:
+        assert api._get_endpoint("ROS") == "ros.aliyuncs.com"
+        assert api._get_endpoint("Ros", "cn-hangzhou") == "ros.aliyuncs.com"
+        assert api._get_endpoint("ECS", "cn-beijing") == "ecs.cn-beijing.aliyuncs.com"
 
     def test_fallback(self, api: AliyunApi) -> None:
         assert api._get_endpoint_fallback("unknown", "cn-hangzhou") == "unknown.cn-hangzhou.aliyuncs.com"
@@ -397,6 +414,75 @@ class TestAliyunApiExecute:
         request = call_args[0][1]  # second positional arg is the OpenApiRequest
         assert request.query["PageSize"] == "10"
         assert request.query["DryRun"] == "true"
+
+
+class TestAliyunApiProductNormalization:
+    @pytest.mark.asyncio
+    async def test_uppercase_product_works(self, api: AliyunApi, context: ToolContext, mock_credentials) -> None:
+        mock_client = MagicMock()
+        mock_client.call_api.return_value = {"body": {"Instances": []}}
+
+        with patch("iac_code.tools.cloud.aliyun.aliyun_api.OpenApiClient", return_value=mock_client):
+            result = await api.execute(
+                tool_input={"product": "ROS", "action": "ListStacks", "region_id": "cn-hangzhou"},
+                context=context,
+            )
+        assert result.is_error is False
+
+
+class TestAliyunApiHooks:
+    @pytest.mark.asyncio
+    async def test_hook_blocks_validate_with_wrong_resource_types(
+        self, api: AliyunApi, context: ToolContext, mock_credentials
+    ) -> None:
+        template = json.dumps(
+            {
+                "ROSTemplateFormatVersion": "2015-09-01",
+                "Resources": {
+                    "Vpc": {"Type": "ALIYUN::VPC::VPC", "Properties": {}},
+                    "VSwitch": {"Type": "ALIYUN::VPC::VSwitch", "Properties": {}},
+                },
+            }
+        )
+        result = await api.execute(
+            tool_input={
+                "product": "ros",
+                "action": "ValidateTemplate",
+                "params": {"TemplateBody": template},
+                "region_id": "cn-hangzhou",
+            },
+            context=context,
+        )
+        assert result.is_error is True
+        assert "ALIYUN::ECS::VPC" in result.content
+        assert "ALIYUN::ECS::VSwitch" in result.content
+
+    @pytest.mark.asyncio
+    async def test_hook_passes_correct_resource_types(
+        self, api: AliyunApi, context: ToolContext, mock_credentials
+    ) -> None:
+        template = json.dumps(
+            {
+                "ROSTemplateFormatVersion": "2015-09-01",
+                "Resources": {
+                    "Vpc": {"Type": "ALIYUN::ECS::VPC", "Properties": {}},
+                },
+            }
+        )
+        mock_client = MagicMock()
+        mock_client.call_api.return_value = {"body": {"Description": "Valid"}}
+
+        with patch("iac_code.tools.cloud.aliyun.aliyun_api.OpenApiClient", return_value=mock_client):
+            result = await api.execute(
+                tool_input={
+                    "product": "ros",
+                    "action": "ValidateTemplate",
+                    "params": {"TemplateBody": template},
+                    "region_id": "cn-hangzhou",
+                },
+                context=context,
+            )
+        assert result.is_error is False
 
 
 class TestAliyunApiBuildConfig:
