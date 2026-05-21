@@ -130,6 +130,7 @@ MODEL_THINKING: dict[str, dict[str, ThinkingSpec]] = {
         "deepseek-v4-flash": ThinkingSpec(ThinkingFamily.OPENAI, _DEEPSEEK_EFFORTS, EffortLevel.HIGH),
     },
     "dashscope": {
+        "qwen3.7-max": ThinkingSpec(ThinkingFamily.DASHSCOPE),
         "qwen3.6-max-preview": ThinkingSpec(ThinkingFamily.DASHSCOPE),
         "qwen3.6-plus": ThinkingSpec(ThinkingFamily.DASHSCOPE),
         "qwen3.5-plus": ThinkingSpec(ThinkingFamily.DASHSCOPE),
@@ -147,8 +148,11 @@ MODEL_THINKING: dict[str, dict[str, ThinkingSpec]] = {
         "MiniMax-M2.5": ThinkingSpec(ThinkingFamily.DASHSCOPE),
     },
     "gemini": {
+        "gemini-3.5-flash": ThinkingSpec(ThinkingFamily.GEMINI, _GEMINI_EFFORTS, EffortLevel.MEDIUM),
         "gemini-3.1-pro-preview": ThinkingSpec(ThinkingFamily.GEMINI, _GEMINI_EFFORTS, EffortLevel.MEDIUM),
         "gemini-3-flash-preview": ThinkingSpec(ThinkingFamily.GEMINI, _GEMINI_EFFORTS, EffortLevel.MEDIUM),
+        "gemini-3.1-flash-lite": ThinkingSpec(ThinkingFamily.GEMINI, _GEMINI_EFFORTS, EffortLevel.MEDIUM),
+        "gemini-3.1-flash-lite-preview": ThinkingSpec(ThinkingFamily.GEMINI, _GEMINI_EFFORTS, EffortLevel.MEDIUM),
         "gemini-2.5-pro": ThinkingSpec(ThinkingFamily.GEMINI, _GEMINI_EFFORTS, EffortLevel.MEDIUM),
         "gemini-2.5-flash": ThinkingSpec(ThinkingFamily.GEMINI, _GEMINI_EFFORTS, EffortLevel.MEDIUM),
     },

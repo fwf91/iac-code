@@ -16,7 +16,7 @@ from typing import Any
 import yaml
 
 # Default LLM model used when no model is saved in settings
-DEFAULT_MODEL = "qwen3.6-plus"
+DEFAULT_MODEL = "qwen3.7-max"
 
 # Configuration directory
 _CONFIG_DIR_NAME = ".iac-code"
