@@ -58,8 +58,7 @@ class TestExpandParameters:
         }
         result = expand_parameters("ros", "CreateStack", params)
         assert result is None
-        assert params["Parameters.1.ParameterKey"] == "ZoneId"
-        assert params["Parameters.1.ParameterValue"] == ""
+        assert not params
 
     def test_list_invalid_item_no_change(self) -> None:
         params = {"Parameters": ["not_a_dict"]}
@@ -121,7 +120,7 @@ class TestExpandParameters:
         params = {"Parameters": {"key": None}}
         result = expand_parameters("ros", "CreateStack", params)
         assert result is None
-        assert params["Parameters.1.ParameterValue"] == ""
+        assert not params
 
     def test_value_bool(self) -> None:
         params = {"Parameters": {"a": True, "b": False}}

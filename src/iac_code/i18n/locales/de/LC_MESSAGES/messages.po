@@ -4,9 +4,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: iac-code 0.2.2\n"
+"Project-Id-Version: iac-code 0.2.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-25 14:30+0800\n"
+"POT-Creation-Date: 2026-05-25 15:02+0800\n"
 "PO-Revision-Date: 2026-05-13 00:00+0000\n"
 "Last-Translator: \n"
 "Language: de\n"
@@ -544,14 +544,14 @@ msgid "[conversation id or search term]"
 msgstr "[Konversations-ID oder Suchbegriff]"
 
 #: src/iac_code/commands/auth.py:249 src/iac_code/commands/auth.py:883
-#: src/iac_code/ui/core/prompt_input.py:510
+#: src/iac_code/ui/core/prompt_input.py:546
 msgid "Navigate"
 msgstr "Navigieren"
 
 #: src/iac_code/commands/auth.py:249 src/iac_code/commands/auth.py:371
 #: src/iac_code/commands/auth.py:405 src/iac_code/commands/auth.py:412
 #: src/iac_code/commands/auth.py:436 src/iac_code/commands/auth.py:883
-#: src/iac_code/commands/auth.py:1073 src/iac_code/ui/core/prompt_input.py:510
+#: src/iac_code/commands/auth.py:1073 src/iac_code/ui/core/prompt_input.py:546
 msgid "Confirm"
 msgstr "Bestätigen"
 
@@ -1902,15 +1902,15 @@ msgstr "Vollständiges Protokoll · ctrl+o zum Umschalten"
 msgid "No matches found"
 msgstr "Keine Treffer"
 
-#: src/iac_code/ui/core/prompt_input.py:336
+#: src/iac_code/ui/core/prompt_input.py:337
 msgid "Image in clipboard · ctrl+v to paste"
 msgstr "Bild in der Zwischenablage · Strg+V zum Einfügen"
 
-#: src/iac_code/ui/core/prompt_input.py:510
+#: src/iac_code/ui/core/prompt_input.py:546
 msgid "Fill"
 msgstr "Ausfüllen"
 
-#: src/iac_code/ui/core/prompt_input.py:510
+#: src/iac_code/ui/core/prompt_input.py:546
 msgid "Dismiss"
 msgstr "Schließen"
 
