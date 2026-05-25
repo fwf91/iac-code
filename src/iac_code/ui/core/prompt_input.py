@@ -99,7 +99,8 @@ class PromptInput:
         # Rendering state
         self._prompt: str = ""
         self._prev_suggestion_lines: int = 0  # how many suggestion lines were rendered last frame
-        self._prev_content_extra_lines: int = 0  # extra lines beyond the first (for multi-line text)
+        self._prev_content_extra_lines: int = 0  # physical extra lines beyond first (incl. wrapping)
+        self._prev_cursor_physical_row: int = 0  # physical row the cursor was placed on (from row 0)
 
     # ------------------------------------------------------------------
     # Public helpers
@@ -398,12 +399,25 @@ class PromptInput:
         out = sys.stdout
         text = self._get_text()
         lines = text.split("\n")
-        content_extra_lines = len(lines) - 1
         cols = shutil.get_terminal_size().columns
 
-        # Move cursor up to the prompt line (first content line)
-        if self._prev_content_extra_lines > 0:
-            out.write(f"\033[{self._prev_content_extra_lines}A")
+        # Calculate physical extra lines accounting for terminal wrapping.
+        # After writing content of display width w starting from col 0,
+        # the cursor ends on physical row (w-1)//cols (0-indexed) for w>0.
+        content_extra_physical = 0
+        for i, line in enumerate(lines):
+            if i > 0:
+                content_extra_physical += 1  # \n moves to next row
+            line_width = _display_width(line)
+            if i == 0:
+                line_width += _display_width(self._prompt)
+            if line_width > 0:
+                content_extra_physical += (line_width - 1) // cols
+
+        # Move cursor up to the prompt line (first content line).
+        # The cursor is at _prev_cursor_physical_row from last render.
+        if self._prev_cursor_physical_row > 0:
+            out.write(f"\033[{self._prev_cursor_physical_row}A")
 
         # Clear all previous content + suggestion lines from the prompt line down
         total_prev = self._prev_content_extra_lines + self._prev_suggestion_lines
@@ -418,8 +432,8 @@ class PromptInput:
         out.write(f"{_COLOR_BOLD}{_COLOR_CYAN}{self._prompt}{_COLOR_RESET}")
         out.write(self._highlight_image_refs(lines[0]))
 
-        # Right-aligned clipboard image indicator (first line only, single-line input)
-        if self._clipboard_has_image and not content_extra_lines:
+        # Right-aligned clipboard image indicator (first line only, no wrapping)
+        if self._clipboard_has_image and content_extra_physical == 0:
             hint_text = self._clipboard_hint_text()
             hint_width = _display_width(hint_text)
             first_line_width = _display_width(self._prompt) + _display_width(lines[0])
@@ -433,14 +447,14 @@ class PromptInput:
         for i in range(1, len(lines)):
             out.write(f"\n\r{self._highlight_image_refs(lines[i])}")
 
-        # Ghost text (only for single-line input)
+        # Ghost text (only for single-line input without wrapping)
         ghost = ""
-        if not content_extra_lines and self._aggregator:
+        if content_extra_physical == 0 and self._aggregator:
             ghost = self._aggregator.ghost_text
         if ghost:
             out.write(f"{_COLOR_GHOST}{ghost}{_COLOR_RESET}")
 
-        # Position cursor: find which line and column the cursor maps to
+        # Position cursor: find which logical line and column the cursor maps to
         cursor_line = 0
         cursor_col = 0
         pos = 0
@@ -455,19 +469,41 @@ class PromptInput:
             cursor_line = len(lines) - 1
             cursor_col = len(lines[-1])
 
-        # Terminal cursor is currently at end of the last content line (+ ghost).
-        # Move up to cursor_line.
-        lines_up = content_extra_lines - cursor_line
+        # Calculate target display column within the logical line
+        target_col = _display_width(lines[cursor_line][:cursor_col])
+        if cursor_line == 0:
+            target_col += _display_width(self._prompt)
+
+        # Calculate cursor's absolute physical row from prompt start
+        cursor_physical_row = 0
+        for i in range(cursor_line):
+            if i > 0:
+                cursor_physical_row += 1  # \n
+            lw = _display_width(lines[i]) + (_display_width(self._prompt) if i == 0 else 0)
+            if lw > 0:
+                cursor_physical_row += (lw - 1) // cols
+        if cursor_line > 0:
+            cursor_physical_row += 1  # \n before cursor's line
+        cursor_physical_row += target_col // cols
+        cursor_physical_col = target_col % cols
+
+        # Clamp cursor row to content extent (handles pending-wrap edge case:
+        # when width is exactly N*cols, terminal is in pending-wrap state on the
+        # last row, so position cursor at rightmost column instead of col 0).
+        if cursor_physical_row > content_extra_physical:
+            cursor_physical_row = content_extra_physical
+            cursor_physical_col = cols  # CUF will clamp to right margin
+
+        # Terminal cursor is at end of rendered content (row content_extra_physical).
+        # Move up to cursor's physical row.
+        lines_up = content_extra_physical - cursor_physical_row
         if lines_up > 0:
             out.write(f"\033[{lines_up}A")
 
         # Move to correct column
-        target_col = _display_width(lines[cursor_line][:cursor_col])
-        if cursor_line == 0:
-            target_col += _display_width(self._prompt)
         out.write("\r")
-        if target_col > 0:
-            out.write(f"\033[{target_col}C")
+        if cursor_physical_col > 0:
+            out.write(f"\033[{cursor_physical_col}C")
 
         # Render suggestion overlay below all content lines
         suggestion_lines = 0
@@ -481,7 +517,7 @@ class PromptInput:
             total_new_suggestions = len(visible) + 1  # items + hint bar
 
             # Move from cursor position to after last content line
-            lines_to_bottom = content_extra_lines - cursor_line
+            lines_to_bottom = content_extra_physical - cursor_physical_row
             if lines_to_bottom > 0:
                 out.write(f"\033[{lines_to_bottom}B")
 
@@ -524,10 +560,11 @@ class PromptInput:
             if total_up > 0:
                 out.write(f"\033[{total_up}A")
             out.write("\r")
-            if target_col > 0:
-                out.write(f"\033[{target_col}C")
+            if cursor_physical_col > 0:
+                out.write(f"\033[{cursor_physical_col}C")
 
-        self._prev_content_extra_lines = content_extra_lines
+        self._prev_content_extra_lines = content_extra_physical
+        self._prev_cursor_physical_row = cursor_physical_row
         self._prev_suggestion_lines = suggestion_lines
         out.flush()
 
@@ -536,9 +573,10 @@ class PromptInput:
         if self._prev_suggestion_lines > 0:
             out = sys.stdout
             out.write("\033[s")  # save cursor
-            # Move to last content line first
-            if self._prev_content_extra_lines > 0:
-                out.write(f"\033[{self._prev_content_extra_lines}B")
+            # Move from cursor's physical row to end of content
+            rows_to_bottom = self._prev_content_extra_lines - self._prev_cursor_physical_row
+            if rows_to_bottom > 0:
+                out.write(f"\033[{rows_to_bottom}B")
             for _ in range(self._prev_suggestion_lines):
                 out.write("\n\033[2K")
             out.write("\033[u")  # restore cursor
@@ -580,6 +618,7 @@ class PromptInput:
         self._prompt = prompt
         self._prev_suggestion_lines = 0
         self._prev_content_extra_lines = 0
+        self._prev_cursor_physical_row = 0
 
         # Initial render (just prompt)
         sys.stdout.write(f"{_COLOR_BOLD}{_COLOR_CYAN}{prompt}{_COLOR_RESET}")
@@ -602,7 +641,9 @@ class PromptInput:
             if self._pending_action is not None:
                 action = self._pending_action
                 self._pending_action = None
-                # Clear prompt line so action output starts on a clean line
+                # Move to prompt line and clear before action output
+                if self._prev_cursor_physical_row > 0:
+                    sys.stdout.write(f"\033[{self._prev_cursor_physical_row}A")
                 sys.stdout.write("\r\x1b[K")
                 sys.stdout.flush()
                 action()
@@ -611,6 +652,7 @@ class PromptInput:
                 sys.stdout.write(self._get_text())
                 sys.stdout.flush()
                 self._prev_content_extra_lines = 0
+                self._prev_cursor_physical_row = 0
                 self._prev_suggestion_lines = 0
 
         # Clear suggestion overlay before returning
@@ -623,9 +665,9 @@ class PromptInput:
             term_width = shutil.get_terminal_size().columns
             _bg = "\033[48;5;236m"
 
-            # Move cursor up to prompt line if multi-line
-            if self._prev_content_extra_lines > 0:
-                sys.stdout.write(f"\033[{self._prev_content_extra_lines}A")
+            # Move cursor up to prompt line (from cursor's physical row)
+            if self._prev_cursor_physical_row > 0:
+                sys.stdout.write(f"\033[{self._prev_cursor_physical_row}A")
 
             # Render first line with prompt
             first_content = f"{prompt}{lines[0]}"

@@ -4,9 +4,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: iac-code 0.2.2\n"
+"Project-Id-Version: iac-code 0.2.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-22 14:28+0800\n"
+"POT-Creation-Date: 2026-05-25 15:02+0800\n"
 "PO-Revision-Date: 2026-04-02 00:00+0000\n"
 "Last-Translator: \n"
 "Language: zh\n"
@@ -520,14 +520,14 @@ msgid "[conversation id or search term]"
 msgstr "[会话 ID 或搜索词]"
 
 #: src/iac_code/commands/auth.py:249 src/iac_code/commands/auth.py:883
-#: src/iac_code/ui/core/prompt_input.py:510
+#: src/iac_code/ui/core/prompt_input.py:546
 msgid "Navigate"
 msgstr "导航"
 
 #: src/iac_code/commands/auth.py:249 src/iac_code/commands/auth.py:371
 #: src/iac_code/commands/auth.py:405 src/iac_code/commands/auth.py:412
 #: src/iac_code/commands/auth.py:436 src/iac_code/commands/auth.py:883
-#: src/iac_code/commands/auth.py:1073 src/iac_code/ui/core/prompt_input.py:510
+#: src/iac_code/commands/auth.py:1073 src/iac_code/ui/core/prompt_input.py:546
 msgid "Confirm"
 msgstr "确认"
 
@@ -1538,13 +1538,79 @@ msgstr "找到 {count} 篇文档（共 {total} 篇）"
 msgid "Use web_fetch tool to read full document content if needed."
 msgstr "如需要，请使用 web_fetch 工具读取完整文档内容。"
 
-#: src/iac_code/tools/cloud/aliyun/ros_stack.py:139
+#: src/iac_code/tools/cloud/aliyun/ros_stack.py:143
 msgid "ROS Stack"
 msgstr "ROS 资源栈"
 
 #: src/iac_code/tools/cloud/aliyun/ros_stack_instances.py:100
 msgid "CloudStackInstances"
 msgstr "云资源栈实例"
+
+#: src/iac_code/tools/cloud/aliyun/hooks/ros_validate.py:48
+#, python-brace-format
+msgid "Template YAML syntax error: {}"
+msgstr "模板 YAML 语法错误：{}"
+
+#: src/iac_code/tools/cloud/aliyun/hooks/ros_validate.py:60
+#, python-brace-format
+msgid ""
+"Template YAML syntax error (line {line}, column {col}): {problem}\n"
+"Context:\n"
+"{context}"
+msgstr ""
+"模板 YAML 语法错误（第 {line} 行，第 {col} 列）：{problem}\n"
+"上下文：\n"
+"{context}"
+
+#: src/iac_code/tools/cloud/aliyun/hooks/ros_validate.py:66
+#, python-brace-format
+msgid "Template JSON syntax error (line {line}, column {col}): {msg}"
+msgstr "模板 JSON 语法错误（第 {line} 行，第 {col} 列）：{msg}"
+
+#: src/iac_code/tools/cloud/aliyun/hooks/ros_validate.py:85
+#, python-brace-format
+msgid ""
+"Template {fmt} parse result is not an object (dict), please check the "
+"template format"
+msgstr "模板 {fmt} 解析结果不是对象（dict），请检查模板格式"
+
+#: src/iac_code/tools/cloud/aliyun/hooks/ros_validate.py:104
+msgid ""
+"Template is missing ROSTemplateFormatVersion (ROS templates must include "
+"this field, e.g. '2015-09-01')"
+msgstr "模板缺少 ROSTemplateFormatVersion 字段（ROS 模板必须包含此字段，如 '2015-09-01'）"
+
+#: src/iac_code/tools/cloud/aliyun/hooks/ros_validate.py:110
+msgid "Template is missing Resources (ROS templates must include Resources)"
+msgstr "模板缺少 Resources 字段（ROS 模板必须包含 Resources）"
+
+#: src/iac_code/tools/cloud/aliyun/hooks/ros_validate.py:112
+#, python-brace-format
+msgid "Resources must be an object (dict), current type is {}"
+msgstr "Resources 必须是对象（dict），当前类型为 {}"
+
+#: src/iac_code/tools/cloud/aliyun/hooks/ros_validate.py:117
+#, python-brace-format
+msgid ""
+"Resource '{name}' definition must be an object (dict), current type is "
+"{type}"
+msgstr "资源 '{name}' 定义必须是对象（dict），当前类型为 {type}"
+
+#: src/iac_code/tools/cloud/aliyun/hooks/ros_validate.py:123
+#, python-brace-format
+msgid "Resource '{name}' is missing the Type field"
+msgstr "资源 '{name}' 缺少 Type 字段"
+
+#: src/iac_code/tools/cloud/aliyun/hooks/ros_validate.py:129
+#, python-brace-format
+msgid "Resource '{name}' has incorrect type '{wrong}', should be '{correct}'"
+msgstr "资源 '{name}' 的类型 '{wrong}' 不正确，应改为 '{correct}'"
+
+#: src/iac_code/tools/cloud/aliyun/hooks/ros_validate.py:151
+msgid ""
+"Template structure validation found the following issues, please fix and "
+"retry:"
+msgstr "模板结构校验发现以下问题，请修复后重试："
 
 #: src/iac_code/ui/banner.py:71
 msgid "Your AI-powered Infrastructure as Code assistant"
@@ -1776,15 +1842,15 @@ msgstr "显示完整记录 · 按 ctrl+o 切换"
 msgid "No matches found"
 msgstr "未找到匹配项"
 
-#: src/iac_code/ui/core/prompt_input.py:336
+#: src/iac_code/ui/core/prompt_input.py:337
 msgid "Image in clipboard · ctrl+v to paste"
 msgstr "剪贴板中有图像 · 按 ctrl+v 粘贴"
 
-#: src/iac_code/ui/core/prompt_input.py:510
+#: src/iac_code/ui/core/prompt_input.py:546
 msgid "Fill"
 msgstr "填充"
 
-#: src/iac_code/ui/core/prompt_input.py:510
+#: src/iac_code/ui/core/prompt_input.py:546
 msgid "Dismiss"
 msgstr "关闭"
 
