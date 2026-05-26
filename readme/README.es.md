@@ -47,6 +47,12 @@ También se admite la lectura desde stdin:
 echo "Crear un bucket OSS" | iac-code --prompt -
 ```
 
+## Demo
+
+<p align="center">
+  <img src="../website/static/img/demo_en.gif" alt="iac-code demo" width="100%">
+</p>
+
 ## Contáctenos
 
 | [DingTalk](https://qr.dingtalk.com/action/joingroup?code=v1,k1,ubm/77U7qRh/STFZUNBP26X4PNg2z6+uhiPcLGtDNfU=&_dt_no_comment=1&origin=11) | [Discord](https://discord.gg/qECFuFBwF) |
